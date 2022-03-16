@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Event_TransferNodeData : UnityEvent<List<Node>> { }
+[Serializable]public class Event_TransferNodeData : UnityEvent<List<Node>> { }
 
 public class NodeManager : MonoBehaviour
 {
@@ -23,27 +23,23 @@ public class NodeManager : MonoBehaviour
     private Vector3 mousePositionOnGround;
     public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
+    public Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
     
     private bool currentlyMovingNode;
-    
-    private static NodeManager _instance;
-    public static NodeManager Instance { get { return _instance; } }
-    
-    private void Awake()
-    {
-        if (_instance != null && _instance != this)
-        {
-            Destroy(this.gameObject);
-        } else {
-            _instance = this;
-        }
-    }
 
     void Start()
     {
         cam = Camera.main;
-        UIManager.Instance.onClickCreateSaveFile.AddListener(transferToNewFile);
-        UIManager.Instance.onClickSaveToFile.AddListener(transferToExistingFile);
+    }
+
+    public void ListenToModeChange(string pNewMode)
+    {
+        currentMode = pNewMode;
+    }
+
+    public void ListenToRoadGenerationCommand()
+    {
+        eventTransferToRoadGenerator.Invoke(allNodes);
     }
 
     private void transferToNewFile()
@@ -58,8 +54,6 @@ public class NodeManager : MonoBehaviour
 
     private void Update()
     {
-        currentMode = UIManager.Instance.currentMode;
-
         castRay();
         
         if(Input.GetMouseButtonDown(1)) resetNodeSelection();
@@ -133,7 +127,6 @@ public class NodeManager : MonoBehaviour
 
     private void removeNode()
     {
-        //Before destroying, remove itself from each connected nodes' list.
         if (currentlySelectedNode == null) return;
 
         List<Node> connectedNodes = currentlySelectedNode.connectedNodes;

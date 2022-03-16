@@ -7,12 +7,6 @@ using UnityEngine;
 public class SaveSystem : MonoBehaviour
 {
     [SerializeField] private Nodes_SO currentSaveFile;
-    
-    private void Start()
-    {
-        NodeManager.Instance.eventTransferToNewFile.AddListener(createSaveFile);
-        NodeManager.Instance.eventTransferToExistingFile.AddListener(saveToCurrentFile);
-    }
 
     private void createSaveFile(List<Node> pReceivedNodes)
     {
@@ -27,7 +21,6 @@ public class SaveSystem : MonoBehaviour
 
     private void saveToCurrentFile(List<Node> pReceivedNodes)
     {
-        
         currentSaveFile.Nodes.Add(pReceivedNodes[0]);
         
         EditorUtility.SetDirty(currentSaveFile);
