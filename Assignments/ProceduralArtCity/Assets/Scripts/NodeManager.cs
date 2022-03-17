@@ -60,7 +60,7 @@ public class NodeManager : MonoBehaviour
 
         if (currentMode == "Move" && currentlyMovingNode)
         {
-            currentlySelectedNode.thisNodePosition = mousePositionOnGround;
+            currentlySelectedNode.position = mousePositionOnGround;
 
             if (Input.GetMouseButtonUp(0)) currentlyMovingNode = false;
         }
@@ -121,7 +121,7 @@ public class NodeManager : MonoBehaviour
         GO_newNode.name = "Node" + allNodes.Count;
 
         Node node = GO_newNode.GetComponent<Node>();
-        node.thisNodePosition = GO_newNode.transform.position;
+        node.position = GO_newNode.transform.position;
         allNodes.Add(node);
     }
 
@@ -174,13 +174,13 @@ public class NodeManager : MonoBehaviour
     {
         Gizmos.color = Color.red;
         
-        if(currentlySelectedNode != null) Handles.Label(currentlySelectedNode.thisNodePosition, "Currently selected node");
-
+        if(currentlySelectedNode != null) Handles.Label(currentlySelectedNode.position, "Currently selected node");
+        
         for (int nodeInListIndex = 0; nodeInListIndex < allNodes.Count; nodeInListIndex++)
         {
-            Vector3 currentNodePos = allNodes[nodeInListIndex].thisNodePosition;
-
-            Gizmos.DrawSphere(allNodes[nodeInListIndex].thisNodePosition, 0.05f);
+            Vector3 currentNodePos = allNodes[nodeInListIndex].position;
+            
+            Gizmos.DrawSphere(currentNodePos, 0.05f);
 
             if (allNodes[nodeInListIndex].connectedNodes.Count == 0) continue;
 
@@ -189,7 +189,7 @@ public class NodeManager : MonoBehaviour
                 connectionsInNode++)
             {
                 Vector3 connectedNodePos =
-                    allNodes[nodeInListIndex].connectedNodes[connectionsInNode].thisNodePosition;
+                    allNodes[nodeInListIndex].connectedNodes[connectionsInNode].position;
             
                 Debug.DrawLine(currentNodePos, connectedNodePos);
             }
