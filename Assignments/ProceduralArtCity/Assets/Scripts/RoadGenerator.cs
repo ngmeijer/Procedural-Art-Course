@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -13,6 +14,15 @@ public class RoadGenerator : MonoBehaviour
     public bool faultDetected;
 
     public List<Node> faultyIntersections = new List<Node>();
+
+    public GameObject test1;
+    public GameObject test2;
+
+    public Vector3[] test1Coordinates;
+
+    //public Vector3[] test2Coordinates;
+    Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
+    public bool alreadyRan;
 
     public void InitializeStreets(List<Node> pNodes)
     {
@@ -27,7 +37,7 @@ public class RoadGenerator : MonoBehaviour
         for (int i = 0; i < allNodes.Count; i++)
         {
             Node currentNode = allNodes[i];
-            Vector3 spawnPosition = new Vector3(currentNode.position.x, currentNode.position.y + 0.01f,
+            Vector3 spawnPosition = new Vector3(currentNode.position.x, currentNode.position.y + 0.5f,
                 currentNode.position.z);
 
             GameObject intersection =
@@ -59,38 +69,56 @@ public class RoadGenerator : MonoBehaviour
 
     private void createPlaneMesh(Node pMainNode, Node pConnectedNode)
     {
-        Vector3 vertex1 = pMainNode.vertexCoordinates[0];
-        Vector3 vertex2 = pMainNode.vertexCoordinates[1];
-        Vector3 vertex3 = pConnectedNode.vertexCoordinates[2];
-        Vector3 vertex4 = pConnectedNode.vertexCoordinates[3];
+        if (alreadyRan) return;
+        alreadyRan = true;
+        coordinates.Add("Node 0, vertex 1", pMainNode.vertexCoordinates[0]);
+        coordinates.Add("Node 0, vertex 2", pMainNode.vertexCoordinates[1]);
+
+        coordinates.Add("Node 1, vertex 1", pConnectedNode.vertexCoordinates[0]);
+        coordinates.Add("Node 1, vertex 2", pConnectedNode.vertexCoordinates[1]);
+
+        // Vector3[] verticesTest1 = test1.GetComponent<MeshFilter>().sharedMesh.vertices;
+        //
+        // test1Coordinates = new[]
+        // {
+        //     test1.transform.TransformPoint(verticesTest1[0]),
+        //     test1.transform.TransformPoint(verticesTest1[10]),
+        //     test1.transform.TransformPoint(verticesTest1[110]),
+        //     test1.transform.TransformPoint(verticesTest1[120]),
+        // };
+        //
+        // test2Coordinates = new[]
+        // {
+        //     test2.transform.TransformPoint(verticesTest1[0]),
+        //     test2.transform.TransformPoint(verticesTest1[10]),
+        //     test2.transform.TransformPoint(verticesTest1[110]),
+        //     test2.transform.TransformPoint(verticesTest1[120]),
+        // };
 
         GameObject go = new GameObject("Plane");
         MeshFilter meshFilter = go.AddComponent(typeof(MeshFilter)) as MeshFilter;
         MeshRenderer meshRenderer = go.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
 
-        Mesh mesh = new Mesh();
-        mesh.vertices = new Vector3[]
+        Mesh mesh = new Mesh
         {
-            vertex1,
-            vertex2,
-            vertex3,
-            vertex4
+            vertices = coordinates.Values.ToArray(),
+            uv = new Vector2[] {new Vector2(), new Vector2(), new Vector2(), new Vector2(),},
+            triangles = new int[] {0, 1, 2, 0, 2, 3}
         };
 
-        Debug.Log(mesh.vertices[0]);
-        
-        mesh.uv = new Vector2[]
-        {
-            new Vector2(),
-            new Vector2(),
-            new Vector2(),
-            new Vector2(),
-        };
+        // Mesh mesh = new Mesh
+        // {
+        //     vertices = new Vector3[]
+        //     {
+        //         test1Coordinates[3], test1Coordinates[2], test2Coordinates[0], test2Coordinates[1]
+        //     },
+        //     uv = new Vector2[] {new Vector2(), new Vector2(), new Vector2(), new Vector2(),},
+        //     triangles = new int[] {0, 1, 2, 0, 2, 3}
+        // };
 
-        mesh.triangles = new int[] {0, 1, 2, 0, 2, 3};
 
         meshFilter.mesh = mesh;
-        
+
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
     }
@@ -109,9 +137,12 @@ public class RoadGenerator : MonoBehaviour
                     currentNode.distanceToNextNode);
         }
 
+        GUIStyle style = new GUIStyle();
+        style.normal.textColor = Color.red;
 
-        for (int i = 0; i < allNodes.Count; i++)
+        foreach (KeyValuePair<string, Vector3> vertexPos in coordinates)
         {
+            Handles.Label(vertexPos.Value, $"Vertex {vertexPos.Value}, ID: {vertexPos.Key}", style);
         }
     }
 }

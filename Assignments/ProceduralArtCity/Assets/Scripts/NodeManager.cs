@@ -180,7 +180,7 @@ public class NodeManager : MonoBehaviour
         {
             Vector3 currentNodePos = allNodes[nodeInListIndex].position;
             
-            Gizmos.DrawSphere(currentNodePos, 0.05f);
+            Gizmos.DrawSphere(currentNodePos, 0.5f);
 
             if (allNodes[nodeInListIndex].connectedNodes.Count == 0) continue;
 

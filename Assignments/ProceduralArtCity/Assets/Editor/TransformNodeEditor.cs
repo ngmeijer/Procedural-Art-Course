@@ -10,12 +10,12 @@ public class TransformNodeEditor : Editor
 
         EditorGUI.BeginChangeCheck();
         Quaternion rot = Handles.RotationHandle(editorTarget.intersectionRotation, Vector3.zero);
-        Debug.Log("showing rotation handle");
+
         if (EditorGUI.EndChangeCheck())
         {
             //Undo.RecordObject(target, "Rotated RotateAt Point");
-            editorTarget.intersectionRotation = rot;
-            editorTarget.Update();
+            //editorTarget.intersectionRotation = rot;
+            //editorTarget.Update();
         }
     }
 }

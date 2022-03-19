@@ -16,11 +16,6 @@ public class Node : MonoBehaviour
     public float distanceToNextNode;
 
     public Vector3[] vertexCoordinates;
-    
-    public void Update()
-    {
-        transform.rotation = intersectionRotation;
-    }
 
     public void UpdateVertexCoordinates()
     {
@@ -33,5 +28,10 @@ public class Node : MonoBehaviour
             transform.TransformPoint(vertices[110]),
             transform.TransformPoint(vertices[120]),
         };
+
+        for (int i = 0; i < vertexCoordinates.Length; i++)
+        {
+            vertexCoordinates[i].y = 0.5f;
+        }
     }
 }
