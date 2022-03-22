@@ -43,8 +43,6 @@ public class RoadGenerator : MonoBehaviour
             GameObject intersection =
                 Instantiate(IntersectionPrefab, spawnPosition, Quaternion.identity, currentNode.gameObject.transform);
 
-            if (i != allNodes.Count - 1) currentNode.transform.LookAt(allNodes[i + 1].transform.position);
-
             currentNode.intersectionRotation = intersection.transform.rotation;
             currentNode.InterSection = intersection;
 
@@ -71,29 +69,76 @@ public class RoadGenerator : MonoBehaviour
     {
         if (alreadyRan) return;
         alreadyRan = true;
-        coordinates.Add("Node 0, vertex 1", pMainNode.vertexCoordinates[0]);
-        coordinates.Add("Node 0, vertex 2", pMainNode.vertexCoordinates[1]);
 
-        coordinates.Add("Node 1, vertex 1", pConnectedNode.vertexCoordinates[0]);
-        coordinates.Add("Node 1, vertex 2", pConnectedNode.vertexCoordinates[1]);
+        string otherNodeDirection = "";
+        Vector3 direction = pConnectedNode.position - pMainNode.position;
 
-        // Vector3[] verticesTest1 = test1.GetComponent<MeshFilter>().sharedMesh.vertices;
-        //
-        // test1Coordinates = new[]
-        // {
-        //     test1.transform.TransformPoint(verticesTest1[0]),
-        //     test1.transform.TransformPoint(verticesTest1[10]),
-        //     test1.transform.TransformPoint(verticesTest1[110]),
-        //     test1.transform.TransformPoint(verticesTest1[120]),
-        // };
-        //
-        // test2Coordinates = new[]
-        // {
-        //     test2.transform.TransformPoint(verticesTest1[0]),
-        //     test2.transform.TransformPoint(verticesTest1[10]),
-        //     test2.transform.TransformPoint(verticesTest1[110]),
-        //     test2.transform.TransformPoint(verticesTest1[120]),
-        // };
+        float forwardAngle = Vector3.Angle(direction, pMainNode.transform.forward);
+        if (forwardAngle <= 45f)
+        {
+            otherNodeDirection = "North";
+        }
+
+        float rightAngle = Vector3.Angle(direction, pMainNode.transform.right);
+        if (rightAngle <= 45f)
+        {
+            otherNodeDirection = "East";
+        }
+
+        float backAngle = Vector3.Angle(direction, pMainNode.transform.forward * -1);
+        if (backAngle <= 45f)
+        {
+            otherNodeDirection = "South";
+        }
+
+        float leftAngle = Vector3.Angle(direction, pMainNode.transform.right * -1);
+        if (leftAngle <= 45f)
+        {
+            otherNodeDirection = "West";
+        }
+
+        Vector3 node1Vertex1 = new Vector3();
+        Vector3 node1Vertex2 = new Vector3();
+        Vector3 node2Vertex1 = new Vector3();
+        Vector3 node2Vertex2 = new Vector3();
+
+        switch (otherNodeDirection)
+        {
+            case "North":
+                node1Vertex1 = pMainNode.vertexCoordinates[0];
+                node1Vertex2 = pMainNode.vertexCoordinates[1];
+
+                node2Vertex1 = pConnectedNode.vertexCoordinates[3];
+                node2Vertex2 = pConnectedNode.vertexCoordinates[2];
+                break;
+            case "East":
+                node1Vertex1 = pMainNode.vertexCoordinates[0];
+                node1Vertex2 = pMainNode.vertexCoordinates[2];
+
+                node2Vertex1 = pConnectedNode.vertexCoordinates[3];
+                node2Vertex2 = pConnectedNode.vertexCoordinates[2];
+                break;
+            case "South":
+                node1Vertex1 = pMainNode.vertexCoordinates[0];
+                node1Vertex2 = pMainNode.vertexCoordinates[1];
+
+                node2Vertex1 = pConnectedNode.vertexCoordinates[3];
+                node2Vertex2 = pConnectedNode.vertexCoordinates[2];
+                break;
+            case "West":
+                node1Vertex1 = pMainNode.vertexCoordinates[1];
+                node1Vertex2 = pMainNode.vertexCoordinates[3];
+
+                node2Vertex1 = pConnectedNode.vertexCoordinates[2];
+                node2Vertex2 = pConnectedNode.vertexCoordinates[0];
+                break;
+        }
+
+        coordinates.Add("Node 0, vertex 1", node1Vertex1);
+        coordinates.Add("Node 0, vertex 2", node1Vertex2);
+
+        coordinates.Add("Node 1, vertex 1", node2Vertex1);
+        coordinates.Add("Node 1, vertex 2", node2Vertex2);
 
         GameObject go = new GameObject("Plane");
         MeshFilter meshFilter = go.AddComponent(typeof(MeshFilter)) as MeshFilter;
@@ -105,17 +150,6 @@ public class RoadGenerator : MonoBehaviour
             uv = new Vector2[] {new Vector2(), new Vector2(), new Vector2(), new Vector2(),},
             triangles = new int[] {0, 1, 2, 0, 2, 3}
         };
-
-        // Mesh mesh = new Mesh
-        // {
-        //     vertices = new Vector3[]
-        //     {
-        //         test1Coordinates[3], test1Coordinates[2], test2Coordinates[0], test2Coordinates[1]
-        //     },
-        //     uv = new Vector2[] {new Vector2(), new Vector2(), new Vector2(), new Vector2(),},
-        //     triangles = new int[] {0, 1, 2, 0, 2, 3}
-        // };
-
 
         meshFilter.mesh = mesh;
 
@@ -138,7 +172,7 @@ public class RoadGenerator : MonoBehaviour
         }
 
         GUIStyle style = new GUIStyle();
-        style.normal.textColor = Color.red;
+        style.normal.textColor = Color.white;
 
         foreach (KeyValuePair<string, Vector3> vertexPos in coordinates)
         {
