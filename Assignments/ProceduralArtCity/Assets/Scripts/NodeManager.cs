@@ -136,7 +136,7 @@ public class NodeManager : MonoBehaviour
         }
         
         allNodes.Remove(currentlySelectedNode);
-        Destroy(currentlySelectedNode);
+        Destroy(currentlySelectedNode.gameObject);
     }
 
     private void moveNode()

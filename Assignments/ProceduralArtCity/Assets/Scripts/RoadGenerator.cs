@@ -60,6 +60,7 @@ public class RoadGenerator : MonoBehaviour
 
             for (int j = 0; j < currentNode.connectedNodes.Count; j++)
             {
+                Debug.Log("running loop");
                 createPlaneMesh(currentNode, currentNode.connectedNodes[j]);
             }
         }
@@ -67,8 +68,8 @@ public class RoadGenerator : MonoBehaviour
 
     private void createPlaneMesh(Node pMainNode, Node pConnectedNode)
     {
-        if (alreadyRan) return;
-        alreadyRan = true;
+
+        coordinates.Clear();
 
         string otherNodeDirection = "";
         Vector3 direction = pConnectedNode.position - pMainNode.position;
@@ -97,50 +98,52 @@ public class RoadGenerator : MonoBehaviour
             otherNodeDirection = "West";
         }
 
+        Vector3 node0Vertex1 = new Vector3();
+        Vector3 node0Vertex2 = new Vector3();
         Vector3 node1Vertex1 = new Vector3();
         Vector3 node1Vertex2 = new Vector3();
-        Vector3 node2Vertex1 = new Vector3();
-        Vector3 node2Vertex2 = new Vector3();
 
         switch (otherNodeDirection)
         {
             case "North":
-                node1Vertex1 = pMainNode.vertexCoordinates[0];
-                node1Vertex2 = pMainNode.vertexCoordinates[1];
+                node0Vertex1 = pMainNode.vertexCoordinates[0];
+                node0Vertex2 = pMainNode.vertexCoordinates[1];
 
-                node2Vertex1 = pConnectedNode.vertexCoordinates[3];
-                node2Vertex2 = pConnectedNode.vertexCoordinates[2];
+                node1Vertex1 = pConnectedNode.vertexCoordinates[3];
+                node1Vertex2 = pConnectedNode.vertexCoordinates[2];
                 break;
             case "East":
-                node1Vertex1 = pMainNode.vertexCoordinates[0];
-                node1Vertex2 = pMainNode.vertexCoordinates[2];
+                node0Vertex1 = pMainNode.vertexCoordinates[2];
+                node0Vertex2 = pMainNode.vertexCoordinates[0];
 
-                node2Vertex1 = pConnectedNode.vertexCoordinates[3];
-                node2Vertex2 = pConnectedNode.vertexCoordinates[2];
+                node1Vertex1 = pConnectedNode.vertexCoordinates[1];
+                node1Vertex2 = pConnectedNode.vertexCoordinates[3];
                 break;
             case "South":
-                node1Vertex1 = pMainNode.vertexCoordinates[0];
-                node1Vertex2 = pMainNode.vertexCoordinates[1];
+                node0Vertex1 = pMainNode.vertexCoordinates[3];
+                node0Vertex2 = pMainNode.vertexCoordinates[2];
 
-                node2Vertex1 = pConnectedNode.vertexCoordinates[3];
-                node2Vertex2 = pConnectedNode.vertexCoordinates[2];
+                node1Vertex1 = pConnectedNode.vertexCoordinates[0];
+                node1Vertex2 = pConnectedNode.vertexCoordinates[1];
                 break;
             case "West":
-                node1Vertex1 = pMainNode.vertexCoordinates[1];
-                node1Vertex2 = pMainNode.vertexCoordinates[3];
+                node0Vertex1 = pMainNode.vertexCoordinates[1];
+                node0Vertex2 = pMainNode.vertexCoordinates[3];
 
-                node2Vertex1 = pConnectedNode.vertexCoordinates[2];
-                node2Vertex2 = pConnectedNode.vertexCoordinates[0];
+                node1Vertex1 = pConnectedNode.vertexCoordinates[2];
+                node1Vertex2 = pConnectedNode.vertexCoordinates[0];
                 break;
         }
 
-        coordinates.Add("Node 0, vertex 1", node1Vertex1);
-        coordinates.Add("Node 0, vertex 2", node1Vertex2);
+        coordinates.Add("Node 0, vertex 1", node0Vertex1);
+        coordinates.Add("Node 0, vertex 2", node0Vertex2);
 
-        coordinates.Add("Node 1, vertex 1", node2Vertex1);
-        coordinates.Add("Node 1, vertex 2", node2Vertex2);
+        coordinates.Add("Node 1, vertex 1", node1Vertex1);
+        coordinates.Add("Node 1, vertex 2", node1Vertex2);
+        
+        Debug.Log("Created road");
 
-        GameObject go = new GameObject("Plane");
+        GameObject go = new GameObject("Road mesh for: " + pMainNode.name);
         MeshFilter meshFilter = go.AddComponent(typeof(MeshFilter)) as MeshFilter;
         MeshRenderer meshRenderer = go.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
 
@@ -155,6 +158,8 @@ public class RoadGenerator : MonoBehaviour
 
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
+        
+        go.transform.SetParent(pMainNode.transform);
     }
 
     private void OnDrawGizmos()
