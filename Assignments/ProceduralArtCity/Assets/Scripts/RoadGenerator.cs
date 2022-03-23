@@ -68,7 +68,8 @@ public class RoadGenerator : MonoBehaviour
 
     private void createPlaneMesh(Node pMainNode, Node pConnectedNode)
     {
-
+        if (pConnectedNode.alreadyConnectedNodes.Contains(pMainNode)) return;
+        
         coordinates.Clear();
 
         string otherNodeDirection = "";
@@ -160,6 +161,8 @@ public class RoadGenerator : MonoBehaviour
         mesh.RecalculateNormals();
         
         go.transform.SetParent(pMainNode.transform);
+        pConnectedNode.alreadyConnectedNodes.Add(pMainNode);
+        pMainNode.alreadyConnectedNodes.Add(pConnectedNode);
     }
 
     private void OnDrawGizmos()
