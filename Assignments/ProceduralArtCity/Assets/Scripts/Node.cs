@@ -16,17 +16,18 @@ public class Node : MonoBehaviour
     public float distanceToNextNode;
 
     public Vector3[] vertexCoordinates;
+    public Vector3[] allVertices;
 
     public void UpdateVertexCoordinates()
     {
-        Vector3[] vertices = InterSection.GetComponent<MeshFilter>().sharedMesh.vertices;
+        allVertices = InterSection.GetComponent<MeshFilter>().sharedMesh.vertices;
         
         vertexCoordinates = new[]
         {
-            transform.TransformPoint(vertices[0]),
-            transform.TransformPoint(vertices[10]),
-            transform.TransformPoint(vertices[110]),
-            transform.TransformPoint(vertices[120]),
+            transform.TransformPoint(allVertices[0]),
+            transform.TransformPoint(allVertices[10]),
+            transform.TransformPoint(allVertices[110]),
+            transform.TransformPoint(allVertices[120]),
         };
 
         for (int i = 0; i < vertexCoordinates.Length; i++)

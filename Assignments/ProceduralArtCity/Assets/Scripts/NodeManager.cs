@@ -77,7 +77,7 @@ public class NodeManager : MonoBehaviour
     {
         RaycastHit hit;
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, 100))
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
             currentPoint = hit.point;
 
@@ -180,7 +180,7 @@ public class NodeManager : MonoBehaviour
         {
             Vector3 currentNodePos = allNodes[nodeInListIndex].position;
             
-            Gizmos.DrawSphere(currentNodePos, 0.5f);
+            Gizmos.DrawSphere(currentNodePos, 1.5f);
 
             if (allNodes[nodeInListIndex].connectedNodes.Count == 0) continue;
 

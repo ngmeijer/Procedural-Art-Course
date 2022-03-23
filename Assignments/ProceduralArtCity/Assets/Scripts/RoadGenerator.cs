@@ -8,21 +8,11 @@ using UnityEngine;
 public class RoadGenerator : MonoBehaviour
 {
     public GameObject IntersectionPrefab;
-    public GameObject RoadPrefab;
-
+    public Material roadMaterial;
+    
     public List<Node> allNodes;
-    public bool faultDetected;
-
-    public List<Node> faultyIntersections = new List<Node>();
-
-    public GameObject test1;
-    public GameObject test2;
-
-    public Vector3[] test1Coordinates;
-
-    //public Vector3[] test2Coordinates;
+    
     Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
-    public bool alreadyRan;
 
     public void InitializeStreets(List<Node> pNodes)
     {
@@ -41,15 +31,13 @@ public class RoadGenerator : MonoBehaviour
                 currentNode.position.z);
 
             GameObject intersection =
-                Instantiate(IntersectionPrefab, spawnPosition, Quaternion.identity, currentNode.gameObject.transform);
+                Instantiate(IntersectionPrefab, spawnPosition, Quaternion.identity, currentNode.transform.GetChild(1));
 
             currentNode.intersectionRotation = intersection.transform.rotation;
             currentNode.InterSection = intersection;
-
             currentNode.UpdateVertexCoordinates();
+            //currentNode.InterSection.transform.Rotate(Vector3.right, -90);
         }
-
-        faultyIntersections.Add(allNodes[1]);
     }
 
     public void CreateRoads()
@@ -60,7 +48,6 @@ public class RoadGenerator : MonoBehaviour
 
             for (int j = 0; j < currentNode.connectedNodes.Count; j++)
             {
-                Debug.Log("running loop");
                 createPlaneMesh(currentNode, currentNode.connectedNodes[j]);
             }
         }
@@ -70,6 +57,7 @@ public class RoadGenerator : MonoBehaviour
     {
         if (pConnectedNode.alreadyConnectedNodes.Contains(pMainNode)) return;
         
+        Debug.Log("Creating road for " + pMainNode.name);
         coordinates.Clear();
 
         string otherNodeDirection = "";
@@ -142,25 +130,25 @@ public class RoadGenerator : MonoBehaviour
         coordinates.Add("Node 1, vertex 1", node1Vertex1);
         coordinates.Add("Node 1, vertex 2", node1Vertex2);
         
-        Debug.Log("Created road");
-
         GameObject go = new GameObject("Road mesh for: " + pMainNode.name);
         MeshFilter meshFilter = go.AddComponent(typeof(MeshFilter)) as MeshFilter;
         MeshRenderer meshRenderer = go.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
-
+        meshRenderer.material = roadMaterial;
+        
         Mesh mesh = new Mesh
         {
             vertices = coordinates.Values.ToArray(),
-            uv = new Vector2[] {new Vector2(), new Vector2(), new Vector2(), new Vector2(),},
-            triangles = new int[] {0, 1, 2, 0, 2, 3}
+            uv = new[] {new Vector2(), new Vector2(), new Vector2(), new Vector2(),},
+            triangles = new[] {0, 1, 2, 0, 2, 3}
         };
 
         meshFilter.mesh = mesh;
 
+        mesh.name = "RoadMesh";
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
         
-        go.transform.SetParent(pMainNode.transform);
+        go.transform.SetParent(pMainNode.transform.GetChild(0));
         pConnectedNode.alreadyConnectedNodes.Add(pMainNode);
         pMainNode.alreadyConnectedNodes.Add(pConnectedNode);
     }
