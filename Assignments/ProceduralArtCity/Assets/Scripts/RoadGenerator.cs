@@ -36,7 +36,6 @@ public class RoadGenerator : MonoBehaviour
             currentNode.intersectionRotation = intersection.transform.rotation;
             currentNode.InterSection = intersection;
             currentNode.UpdateVertexCoordinates();
-            //currentNode.InterSection.transform.Rotate(Vector3.right, -90);
         }
     }
 
@@ -57,7 +56,6 @@ public class RoadGenerator : MonoBehaviour
     {
         if (pConnectedNode.alreadyConnectedNodes.Contains(pMainNode)) return;
         
-        Debug.Log("Creating road for " + pMainNode.name);
         coordinates.Clear();
 
         string otherNodeDirection = "";

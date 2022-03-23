@@ -6,30 +6,34 @@ using UnityEngine;
 using UnityEngine.Events;
 
 [Serializable]public class Event_TransferNodeData : UnityEvent<List<Node>> { }
+[Serializable]public class Event_OnPlaceNode : UnityEvent<Node>{}
+[Serializable]public class Event_OnRemoveNode : UnityEvent<Node>{}
+[Serializable]public class Event_OnResetSelection : UnityEvent{}
 
-public class NodeManager : MonoBehaviour
+public class NodeEditor : MonoBehaviour
 {
     private Camera cam;
     private Vector3 currentPoint;
     [SerializeField] private GameObject nodePrefab;
-    [SerializeField] private Transform nodeParent;
     private string currentMode;
 
     [SerializeField] private List<Node> allNodes = new List<Node>();
     private Node currentlySelectedNode;
-    private GameObject currentlySelectedNodeGO;
     private Node firstNode;
     private Node secondNode;
     private Vector3 mousePositionOnGround;
     public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
     public Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
+    public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
     
     private bool currentlyMovingNode;
 
-    void Start()
+    private void Start()
     {
-        cam = Camera.main;
+        NodeSelector.onNodeSelect.AddListener(determineAction);
+        UIManager.onClickNewMode.AddListener(ListenToModeChange);
+        UIManager.onClickGenerateRoads.AddListener(ListenToRoadGenerationCommand);
     }
 
     public void ListenToModeChange(string pNewMode)
@@ -52,49 +56,11 @@ public class NodeManager : MonoBehaviour
         eventTransferToExistingFile.Invoke(allNodes);
     }
 
-    private void Update()
+    private void determineAction(Node pNode, Vector3 pMousePosition)
     {
-        castRay();
-        
-        if(Input.GetMouseButtonDown(1)) resetNodeSelection();
+        currentlySelectedNode = pNode;
+        mousePositionOnGround = pMousePosition;
 
-        if (currentMode == "Move" && currentlyMovingNode)
-        {
-            currentlySelectedNode.position = mousePositionOnGround;
-
-            if (Input.GetMouseButtonUp(0)) currentlyMovingNode = false;
-        }
-    }
-
-    private void resetNodeSelection()
-    {
-        firstNode = null;
-        secondNode = null;
-        currentlySelectedNode = null;
-    }
-
-    private void castRay()
-    {
-        RaycastHit hit;
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity))
-        {
-            currentPoint = hit.point;
-
-            mousePositionOnGround = new Vector3(currentPoint.x, 0, currentPoint.z);
-            if (Input.GetMouseButtonDown(0))
-            {
-                determineAction(hit);
-            }
-        }
-    }
-
-    private void determineAction(RaycastHit pHit)
-    {
-        currentlyMovingNode = false;
-        currentlySelectedNode = pHit.collider.gameObject.GetComponent<Node>();
-        currentlySelectedNodeGO = pHit.collider.gameObject;
-        
         switch (currentMode)
         {
             case "Place":
@@ -117,8 +83,8 @@ public class NodeManager : MonoBehaviour
 
     private void createNode()
     {
-        GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, nodeParent);
-        GO_newNode.name = "Node" + allNodes.Count;
+        GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, transform);
+        GO_newNode.name = "Node " + allNodes.Count;
 
         Node node = GO_newNode.GetComponent<Node>();
         node.position = GO_newNode.transform.position;
@@ -168,6 +134,13 @@ public class NodeManager : MonoBehaviour
             currentlySelectedNode.connectedNodes.Remove(firstNode);
             resetNodeSelection();
         }
+    }
+    
+    private void resetNodeSelection()
+    {
+        firstNode = null;
+        secondNode = null;
+        currentlySelectedNode = null;
     }
 
     private void OnDrawGizmos()

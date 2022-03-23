@@ -7,8 +7,9 @@ using UnityEngine.Events;
 [Serializable]
 public class Event_OnClickNewMode : UnityEvent<string>
 {
-    
 }
+
+[Serializable] public class Event_OnCityBlockInitialize : UnityEvent{}
 
 public class UIManager : MonoBehaviour
 {
@@ -16,13 +17,15 @@ public class UIManager : MonoBehaviour
     public string currentMode = "none selected";
     private string modeInstructions;
 
-    public UnityEvent onClickCreateSaveFile = new UnityEvent();
-    public UnityEvent onClickSaveToFile = new UnityEvent();
-    public Event_OnClickNewMode onClickNewMode = new Event_OnClickNewMode();
-    public UnityEvent onClickGenerateRoads = new UnityEvent();
-    
+    public static UnityEvent onClickCreateSaveFile = new UnityEvent();
+    public static UnityEvent onClickSaveToFile = new UnityEvent();
+    public static Event_OnClickNewMode onClickNewMode = new Event_OnClickNewMode();
+    public static UnityEvent onClickGenerateRoads = new UnityEvent();
+    public static Event_OnCityBlockInitialize onCityBlockInitialize = new Event_OnCityBlockInitialize();
+
     public bool nodeEditMode;
     public bool streetGenerationMode;
+    public bool cityBlockEditMode;
 
     private void Start()
     {
@@ -32,8 +35,9 @@ public class UIManager : MonoBehaviour
 
     private void OnGUI()
     {
-        if(nodeEditMode) PrepareNodeGUI();
+        if (nodeEditMode) PrepareNodeGUI();
         if (streetGenerationMode) PrepareStreetGenerationGUI();
+        if (cityBlockEditMode) PrepareCityBlockGUI();
     }
 
 
@@ -44,11 +48,26 @@ public class UIManager : MonoBehaviour
             nodeEditMode = true;
             streetGenerationMode = false;
         }
-        
+
         if (GUI.Button(new Rect(10, 70, 150, 50), "Generate roads"))
         {
             onClickGenerateRoads.Invoke();
+            streetGenerationMode = false;
+            cityBlockEditMode = true;
         }
+    }
+
+    private void PrepareCityBlockGUI()
+    {
+        if (GUI.Button(new Rect(10, 10, 150, 50), "Select new city block nodes"))
+        {
+            onCityBlockInitialize.Invoke();
+        }
+    }
+
+    private void activateCityBlockEditModeGUI()
+    {
+        
     }
 
     private void PrepareNodeGUI()
@@ -92,18 +111,18 @@ public class UIManager : MonoBehaviour
             onClickNewMode.Invoke(currentMode);
             modeInstructions = "Click one of the connected \nnodes to disconnect";
         }
-        
+
         if (GUI.Button(new Rect(10, 500, 150, 50), "Confirm map"))
         {
             nodeEditMode = false;
             streetGenerationMode = true;
         }
-        
+
         if (GUI.Button(new Rect(2100, 10, 150, 50), "Create new save file"))
         {
             onClickCreateSaveFile.Invoke();
         }
-        
+
         if (GUI.Button(new Rect(2100, 70, 150, 80), "Save to currently \nselected file"))
         {
             onClickSaveToFile.Invoke();
