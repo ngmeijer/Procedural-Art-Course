@@ -55,6 +55,8 @@ public class UIManager : MonoBehaviour
             onClickGenerateRoads.Invoke();
             streetGenerationMode = false;
             cityBlockEditMode = true;
+            currentMode = "CityBlockGeneration";
+            onClickNewMode.Invoke(currentMode);
         }
     }
 
@@ -117,6 +119,8 @@ public class UIManager : MonoBehaviour
         {
             nodeEditMode = false;
             streetGenerationMode = true;
+            currentMode = "StreetGeneration";
+            onClickNewMode.Invoke(currentMode);
         }
 
         if (GUI.Button(new Rect(2100, 10, 150, 50), "Create new save file"))

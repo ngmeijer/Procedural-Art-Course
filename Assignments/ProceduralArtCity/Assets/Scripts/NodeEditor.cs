@@ -78,6 +78,9 @@ public class NodeEditor : MonoBehaviour
             case "Disconnect":
                 disconnectNode();
                 break;
+            case "Default":
+                Debug.Log("Not a valid mode for Node Editing.");
+                break;
         }
     }
 

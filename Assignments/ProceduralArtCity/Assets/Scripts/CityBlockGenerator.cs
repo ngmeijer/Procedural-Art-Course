@@ -27,8 +27,10 @@ public class CityBlockGenerator : MonoBehaviour
 
     private void checkMode(string pNewMode)
     {
-        if (pNewMode != "CityBlockEditMode") return;
+        Debug.Log(pNewMode);
+        if (pNewMode != "CityBlockGeneration") return;
         
+        Debug.Log("generator active!");
         generatorActive = true;
     }
 
@@ -43,10 +45,10 @@ public class CityBlockGenerator : MonoBehaviour
     {
         if (!generatorActive) return;
         if (pNode == null) return;
-
-        CityBlock currentCityBlock = cityBlocksData[currentSelectedIndex];
         
-        if (!currentCityBlock.outerCorners.Contains(pNode.position)) currentCityBlock.outerCorners.Add(pNode.position);
+        cityBlocksData[currentSelectedIndex].outerCorners.Add(pNode.position);
+        
+        Debug.Log($"Added {pNode.position}");
     }
 
     private void finishCityBlock()
@@ -59,15 +61,18 @@ public class CityBlockGenerator : MonoBehaviour
         centroid.y = 0.5f;
 
         float sumX = 0;
-        float sumY = 0;
+        float sumZ = 0;
         for (int i = 0; i < outerCorners.Count; i++)
         {
+            Debug.Log(outerCorners[i]);
             sumX += outerCorners[i].x;
-            sumY += outerCorners[i].y;
+            sumZ += outerCorners[i].z;
         }
 
+        Debug.Log($"SumX: {sumX}, count: {outerCorners.Count}");
+        
         centroid.x = sumX / outerCorners.Count;
-        centroid.y = sumY / outerCorners.Count;
+        centroid.z = sumZ / outerCorners.Count;
         
         Debug.Log(centroid.ToString("F7"));
 
