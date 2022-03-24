@@ -98,16 +98,29 @@ public class CityBlockGenerator : MonoBehaviour
             Gizmos.color = Color.yellow;
 
             Vector3 centroid = cityBlocksData[i].centroid;
-
+            Mesh spawnAreaMesh = cityBlocksData[i].spawnAreaMesh;
+            
             if(centroid != Vector3.zero) Gizmos.DrawSphere(centroid, 2f);
-
+            Gizmos.color = Color.cyan;
+            if(spawnAreaMesh != null) Gizmos.DrawMesh(spawnAreaMesh, centroid, Quaternion.identity);
+            
+            
             List<Vector3> innerCorners = cityBlocksData[i].innerCorners;
             for (int j = 0; j < innerCorners.Count; j++)
             {
                 Gizmos.color = Color.blue;
                 Gizmos.DrawSphere(innerCorners[j], 1f);
+
+                int previousIndex = j - 1;
+                if (previousIndex < 0) previousIndex = innerCorners.Count - 1;
+
+                int currentIndex = j;
                 
-                if()
+                int nextIndex = j + 1;
+                if (nextIndex > innerCorners.Count - 1) previousIndex = 0;
+                
+                Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[nextIndex]);
+                Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[previousIndex]);
             }
         }
     }
