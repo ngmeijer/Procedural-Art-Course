@@ -24,6 +24,7 @@ public class CityBlockGenerator : MonoBehaviour
         findCentroidOfBlock();
         calculateInnerCorners();
         createEmptyCityBlock();
+        calculateSpawnpoints();
     }
 
     private void checkMode(string pNewMode)
@@ -83,13 +84,25 @@ public class CityBlockGenerator : MonoBehaviour
             float originalLength = directionVector.magnitude;
             directionVector.Normalize();
 
-            float newLength = originalLength - innerOffset;
+            float relativeOffset = innerOffset / originalLength;
+            
+            float newLength = originalLength - (originalLength * relativeOffset);
             directionVector *= newLength;
 
             Vector3 innerCorner = directionVector + centroid;
             cityBlocksData[currentSelectedIndex].innerCorners.Add(innerCorner);
         }
     }
+
+    private void calculateSpawnpoints()
+    {
+        int gridWidth = 0;
+        int gridHeight = 0;
+        
+        int spawnpointCountX = 0;
+        int spawnpointCountY = 0;
+    }
+    
 
     private void OnDrawGizmos()
     {
@@ -117,7 +130,7 @@ public class CityBlockGenerator : MonoBehaviour
                 int currentIndex = j;
                 
                 int nextIndex = j + 1;
-                if (nextIndex > innerCorners.Count - 1) previousIndex = 0;
+                if (nextIndex > innerCorners.Count - 1) nextIndex = 0;
                 
                 Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[nextIndex]);
                 Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[previousIndex]);
