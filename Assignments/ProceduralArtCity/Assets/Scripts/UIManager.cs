@@ -62,12 +62,7 @@ public class UIManager : MonoBehaviour
 
     private void PrepareCityBlockGUI()
     {
-        if (GUI.Button(new Rect(10, 10, 150, 50), "Select new city\nblock nodes"))
-        {
-            onCityBlockInitialize.Invoke();
-        }
-        
-        if (GUI.Button(new Rect(10, 70, 150, 50), "Confirm city block"))
+        if (GUI.Button(new Rect(10, 10, 150, 50), "Confirm city block"))
         {
             onCityBlockFinish.Invoke();
         }

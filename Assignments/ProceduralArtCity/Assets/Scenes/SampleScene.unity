@@ -166,6 +166,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fc9202fe2fdb09449006dc4461f3781, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  cityBlocksData: []
+  innerOffset: 15
 --- !u!1 &289121772
 GameObject:
   m_ObjectHideFlags: 0
