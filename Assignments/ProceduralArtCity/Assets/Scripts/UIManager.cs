@@ -9,7 +9,7 @@ public class Event_OnClickNewMode : UnityEvent<string>
 {
 }
 
-[Serializable] public class Event_OnCityBlockInitialize : UnityEvent{}
+[Serializable] public class Event_OnCityBlockAction : UnityEvent{}
 
 public class UIManager : MonoBehaviour
 {
@@ -21,7 +21,8 @@ public class UIManager : MonoBehaviour
     public static UnityEvent onClickSaveToFile = new UnityEvent();
     public static Event_OnClickNewMode onClickNewMode = new Event_OnClickNewMode();
     public static UnityEvent onClickGenerateRoads = new UnityEvent();
-    public static Event_OnCityBlockInitialize onCityBlockInitialize = new Event_OnCityBlockInitialize();
+    public static Event_OnCityBlockAction onCityBlockInitialize = new Event_OnCityBlockAction();
+    public static Event_OnCityBlockAction onCityBlockFinish = new Event_OnCityBlockAction();
 
     public bool nodeEditMode;
     public bool streetGenerationMode;
@@ -59,15 +60,15 @@ public class UIManager : MonoBehaviour
 
     private void PrepareCityBlockGUI()
     {
-        if (GUI.Button(new Rect(10, 10, 150, 50), "Select new city block nodes"))
+        if (GUI.Button(new Rect(10, 10, 150, 50), "Select new city\nblock nodes"))
         {
             onCityBlockInitialize.Invoke();
         }
-    }
-
-    private void activateCityBlockEditModeGUI()
-    {
         
+        if (GUI.Button(new Rect(10, 70, 150, 50), "Confirm city block"))
+        {
+            onCityBlockFinish.Invoke();
+        }
     }
 
     private void PrepareNodeGUI()
