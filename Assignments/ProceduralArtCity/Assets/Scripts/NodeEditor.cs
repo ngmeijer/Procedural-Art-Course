@@ -179,37 +179,13 @@ public class NodeEditor : MonoBehaviour
             if (positions[i].z > mostTop) mostTop = positions[i].z;
             if (positions[i].z < mostBottom) mostBottom = positions[i].z;
         }
-
+        
         //HORIZONTAL ALIGNMENT
         //Is the top left corner "less left" than the bottom left? Then relocate topleft.x to the bottomleft.x
         if (outerCorners[0].x < outerCorners[3].x)
             outerCorners[3] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[3].z);
         //Else, relocate bottomleft.x to topleft.x
         else outerCorners[3] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[3].z);
-
-        if (outerCorners[0].x > mostLeft)
-        {
-            outerCorners[0] = new Vector3(mostLeft, 0.5f, outerCorners[0].z);
-            outerCorners[3] = new Vector3(mostLeft, 0.5f, outerCorners[3].z);
-        }
-        
-        if (outerCorners[1].x > mostRight)
-        {
-            outerCorners[1] = new Vector3(mostRight, 0.5f, outerCorners[1].z);
-            outerCorners[2] = new Vector3(mostRight, 0.5f, outerCorners[2].z);
-        }
-        
-        if (outerCorners[2].z < mostTop)
-        {
-            outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, mostTop);
-            outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, mostTop);
-        }
-        
-        if (outerCorners[3].z > mostBottom)
-        {
-            outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, mostBottom);
-            outerCorners[3] = new Vector3(outerCorners[3].x, 0.5f, mostBottom);
-        }
 
         //Is the top right corner "less right" than the bottom right? Then relocate topright.x to bottomright.x
         if (outerCorners[1].x < outerCorners[2].x)
@@ -223,10 +199,35 @@ public class NodeEditor : MonoBehaviour
             outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, outerCorners[0].z);
         //Else, relocate topright.z to topleft.z
         else outerCorners[0] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[1].z);
-
+        
         if (outerCorners[2].z > outerCorners[3].z)
             outerCorners[3] = new Vector3(outerCorners[3].x, 0.5f, outerCorners[2].z);
         else outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, outerCorners[3].z);
+        
+        ///////
+        if (outerCorners[0].x > mostLeft || outerCorners[3].x > mostLeft)
+        {
+            outerCorners[0] = new Vector3(mostLeft, 0.5f, outerCorners[0].z);
+            outerCorners[3] = new Vector3(mostLeft, 0.5f, outerCorners[3].z);
+        }
+        
+        if (outerCorners[1].x < mostRight || outerCorners[2].x < mostRight)
+        {
+            outerCorners[1] = new Vector3(mostRight, 0.5f, outerCorners[1].z);
+            outerCorners[2] = new Vector3(mostRight, 0.5f, outerCorners[2].z);
+        }
+        
+        if (outerCorners[0].z < mostTop || outerCorners[1].z < mostTop)
+        {
+            outerCorners[0] = new Vector3(outerCorners[0].x, 0.5f, mostTop);
+            outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, mostTop);
+        }
+        
+        if (outerCorners[2].z > mostBottom || outerCorners[3].z > mostBottom)
+        {
+            outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, mostBottom);
+            outerCorners[3] = new Vector3(outerCorners[3].x, 0.5f, mostBottom);
+        }
     }
 
     private void createSpawnpoints()
@@ -346,8 +347,19 @@ public class NodeEditor : MonoBehaviour
         for (int i = 0; i < outerCorners.Count; i++)
         {
             Gizmos.DrawSphere(outerCorners[i], 2f);
-            Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 0);
+            Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
             Handles.Label(labelPosition, $"index: {i}");
+            
+            int previousIndex = i - 1;
+            if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
+
+            int currentIndex = i;
+                
+            int nextIndex = i + 1;
+            if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
+                
+            Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
+            Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
         }
 
         Gizmos.color = Color.white;

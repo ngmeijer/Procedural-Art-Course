@@ -167,7 +167,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cityBlocksData: []
-  innerOffset: 15
+  innerOffset: 43.09
 --- !u!1 &289121772
 GameObject:
   m_ObjectHideFlags: 0
