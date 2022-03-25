@@ -67,6 +67,7 @@ public class NodeEditor : MonoBehaviour
 
         if (currentMode == "StreetGeneration")
         {
+            destroyUnconnectedNodes();
             calculateOuterCorners();
             alignCornersToRectangle();
             createSpawnpoints();
@@ -266,9 +267,10 @@ public class NodeEditor : MonoBehaviour
         allNodes.Add(node);
     }
 
-    private void removeNode()
+    private void removeNode(Node pNode = null)
     {
-        if (currentlySelectedNode == null) return;
+        if (currentlySelectedNode == null && pNode == null) return;
+        if (pNode != null) currentlySelectedNode = pNode;
 
         List<Node> connectedNodes = currentlySelectedNode.connectedNodes;
         for (int i = 0; i < connectedNodes.Count; i++)
@@ -308,6 +310,14 @@ public class NodeEditor : MonoBehaviour
             firstNode.connectedNodes.Remove(currentlySelectedNode);
             currentlySelectedNode.connectedNodes.Remove(firstNode);
             resetNodeSelection();
+        }
+    }
+
+    private void destroyUnconnectedNodes()
+    {
+        for (int i = 0; i < allNodes.Count; i++)
+        {
+            if (allNodes[i].connectedNodes.Count <= 1) removeNode(allNodes[i]);
         }
     }
 
