@@ -52,6 +52,7 @@ public class NodeEditor : MonoBehaviour
     private float mostRight;
     private float mostTop;
     private float mostBottom;
+    private List<Vector3> spawnPointsList = new List<Vector3>();
 
     private void Start()
     {
@@ -68,6 +69,7 @@ public class NodeEditor : MonoBehaviour
         {
             calculateOuterCorners();
             alignCornersToRectangle();
+            createSpawnpoints();
         }
     }
 
@@ -227,6 +229,32 @@ public class NodeEditor : MonoBehaviour
         else outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, outerCorners[3].z);
     }
 
+    private void createSpawnpoints()
+    {
+        int gridWidth = Mathf.FloorToInt(outerCorners[1].x - outerCorners[0].x);
+        int gridHeight = Mathf.FloorToInt(outerCorners[1].z - outerCorners[2].z);
+    
+        Vector3 offset = new Vector3(1, 0, 1);
+        Vector3 buildingSize = new Vector3(3, 0, 3);
+        int xDivision = Mathf.RoundToInt(buildingSize.x + offset.x);
+        int zDivision = Mathf.RoundToInt(buildingSize.z + offset.z);
+
+        int countX = gridWidth / xDivision;
+        int countZ = gridHeight / zDivision;
+
+        Vector3 topLeft = outerCorners[0];
+        spawnPointsList.Add(topLeft);
+        
+        for (int x = 0; x < countX; x++)
+        {
+            for (int z = 0; z < countZ; z++)
+            {
+                Vector3 spawnPoint = new Vector3(topLeft.x + (buildingSize.x + offset.x) * x, 0f, topLeft.z - (buildingSize.z + offset.z) * z);
+                spawnPointsList.Add(spawnPoint);
+            }
+        }
+    }
+
     private void createNode()
     {
         GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, transform);
@@ -320,6 +348,12 @@ public class NodeEditor : MonoBehaviour
             Gizmos.DrawSphere(outerCorners[i], 2f);
             Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 0);
             Handles.Label(labelPosition, $"index: {i}");
+        }
+
+        Gizmos.color = Color.white;
+        for (int i = 0; i < spawnPointsList.Count; i++)
+        {
+            Gizmos.DrawSphere(spawnPointsList[i], 0.5f);
         }
     }
 }
