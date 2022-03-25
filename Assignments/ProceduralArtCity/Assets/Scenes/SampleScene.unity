@@ -311,6 +311,7 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+  outerCorners: []
 --- !u!4 &534393406
 Transform:
   m_ObjectHideFlags: 0

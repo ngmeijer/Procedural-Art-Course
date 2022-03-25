@@ -46,6 +46,12 @@ public class NodeEditor : MonoBehaviour
     private bool currentlyMovingNode;
 
     [SerializeField] private List<Vector3> outerCorners = new List<Vector3>();
+    List<Vector3> positions = new List<Vector3>();
+    private Vector3 cityCentroid;
+    private float mostLeft;
+    private float mostRight;
+    private float mostTop;
+    private float mostBottom;
 
     private void Start()
     {
@@ -58,7 +64,11 @@ public class NodeEditor : MonoBehaviour
     {
         currentMode = pNewMode;
 
-        if (currentMode == "StreetGeneration") calculateOuterCorners();
+        if (currentMode == "StreetGeneration")
+        {
+            calculateOuterCorners();
+            alignCornersToRectangle();
+        }
     }
 
     public void ListenToRoadGenerationCommand()
@@ -106,18 +116,17 @@ public class NodeEditor : MonoBehaviour
 
     private void calculateOuterCorners()
     {
-        List<Vector3> positions = new List<Vector3>();
         for (int i = 0; i < allNodes.Count; i++)
         {
             positions.Add(allNodes[i].position);
         }
 
-        Vector3 centroid = GridHelperClass.GetCentroidOfArea(positions);
+        cityCentroid = GridHelperClass.GetCentroidOfArea(positions);
 
         Dictionary<Vector3, float> distancesToCentroid = new Dictionary<Vector3, float>();
         for (int i = 0; i < positions.Count; i++)
         {
-            float distance = Vector3.Distance(centroid, positions[i]);
+            float distance = Vector3.Distance(cityCentroid, positions[i]);
             distancesToCentroid.Add(positions[i], distance);
         }
 
@@ -126,24 +135,25 @@ public class NodeEditor : MonoBehaviour
         outerCorners = highestDistances.Keys.ToList();
 
         //Now the points are still sorted on distance. We want them sorted clockwise based on position, starting top-left.
-        Vector3 currentTopLeft = centroid;
-        Vector3 currentTopRight = centroid;
-        Vector3 currentBottomRight = centroid;
-        Vector3 currentBottomLeft = centroid;
+        Vector3 currentTopLeft = cityCentroid;
+        Vector3 currentTopRight = cityCentroid;
+        Vector3 currentBottomRight = cityCentroid;
+        Vector3 currentBottomLeft = cityCentroid;
 
-        int maxIterationCount = 3;
-        int currentIterationCount = 0;
-
-        for (int i = 0; i < outerCorners.Count; i++)
+        for (int i = 0; i < positions.Count; i++)
         {
-            if (outerCorners[i].x > currentTopRight.x && outerCorners[i].z > currentTopRight.z)
-                currentTopRight = outerCorners[i];
-            if (outerCorners[i].x > currentBottomRight.x && outerCorners[i].z < currentBottomRight.z)
-                currentBottomRight = outerCorners[i];
-            if (outerCorners[i].x < currentBottomLeft.x && outerCorners[i].z < currentBottomLeft.z)
-                currentBottomLeft = outerCorners[i];
-            if (outerCorners[i].x < currentTopLeft.x && outerCorners[i].z > currentTopLeft.z)
-                currentTopLeft = outerCorners[i];
+            if (positions[i].x > currentTopRight.x && positions[i].z > currentTopRight.z)
+                currentTopRight = positions[i];
+            if (positions[i].x > currentBottomRight.x && positions[i].z < currentBottomRight.z)
+            {
+                currentBottomRight = positions[i];
+                Debug.Log($"{currentBottomRight}");
+            }
+
+            if (positions[i].x < currentBottomLeft.x && positions[i].z < currentBottomLeft.z)
+                currentBottomLeft = positions[i];
+            if (positions[i].x < currentTopLeft.x && positions[i].z > currentTopLeft.z)
+                currentTopLeft = positions[i];
         }
 
         outerCorners.Clear();
@@ -151,6 +161,70 @@ public class NodeEditor : MonoBehaviour
         outerCorners.Insert(1, currentTopRight);
         outerCorners.Insert(2, currentBottomRight);
         outerCorners.Insert(3, currentBottomLeft);
+    }
+
+    private void alignCornersToRectangle()
+    {
+        mostLeft = cityCentroid.x;
+        mostRight = cityCentroid.x;
+        mostTop = cityCentroid.z;
+        mostBottom = cityCentroid.z;
+
+        for (int i = 0; i < positions.Count; i++)
+        {
+            if (positions[i].x < mostLeft) mostLeft = positions[i].x;
+            if (positions[i].x > mostRight) mostRight = positions[i].x;
+            if (positions[i].z > mostTop) mostTop = positions[i].z;
+            if (positions[i].z < mostBottom) mostBottom = positions[i].z;
+        }
+
+        //HORIZONTAL ALIGNMENT
+        //Is the top left corner "less left" than the bottom left? Then relocate topleft.x to the bottomleft.x
+        if (outerCorners[0].x < outerCorners[3].x)
+            outerCorners[3] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[3].z);
+        //Else, relocate bottomleft.x to topleft.x
+        else outerCorners[3] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[3].z);
+
+        if (outerCorners[0].x > mostLeft)
+        {
+            outerCorners[0] = new Vector3(mostLeft, 0.5f, outerCorners[0].z);
+            outerCorners[3] = new Vector3(mostLeft, 0.5f, outerCorners[3].z);
+        }
+        
+        if (outerCorners[1].x > mostRight)
+        {
+            outerCorners[1] = new Vector3(mostRight, 0.5f, outerCorners[1].z);
+            outerCorners[2] = new Vector3(mostRight, 0.5f, outerCorners[2].z);
+        }
+        
+        if (outerCorners[2].z < mostTop)
+        {
+            outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, mostTop);
+            outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, mostTop);
+        }
+        
+        if (outerCorners[3].z > mostBottom)
+        {
+            outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, mostBottom);
+            outerCorners[3] = new Vector3(outerCorners[3].x, 0.5f, mostBottom);
+        }
+
+        //Is the top right corner "less right" than the bottom right? Then relocate topright.x to bottomright.x
+        if (outerCorners[1].x < outerCorners[2].x)
+            outerCorners[1] = new Vector3(outerCorners[2].x, 0.5f, outerCorners[1].z);
+        //Else, relocate bottomright.x to topright.x
+        else outerCorners[2] = new Vector3(outerCorners[1].x, 0.5f, outerCorners[2].z);
+
+        //VERTICAL ALIGNMENT
+        //Is the top left corner lower than the top right corner? Then relocate topleft.z to topright.z
+        if (outerCorners[0].z > outerCorners[1].z)
+            outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, outerCorners[0].z);
+        //Else, relocate topright.z to topleft.z
+        else outerCorners[0] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[1].z);
+
+        if (outerCorners[2].z > outerCorners[3].z)
+            outerCorners[3] = new Vector3(outerCorners[3].x, 0.5f, outerCorners[2].z);
+        else outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, outerCorners[3].z);
     }
 
     private void createNode()
