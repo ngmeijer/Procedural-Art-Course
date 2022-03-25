@@ -61,6 +61,23 @@ public class NodeEditor : MonoBehaviour
         UIManager.onClickGenerateRoads.AddListener(ListenToRoadGenerationCommand);
     }
 
+    private void Update()
+    {
+        if (currentMode == "Move" && currentlyMovingNode)
+        {
+            Debug.Log("currently moving node.");
+            currentlySelectedNode.position = mousePositionOnGround;
+            currentlySelectedNode.gameObject.transform.position = mousePositionOnGround;
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                currentlyMovingNode = false;
+                onResetSelection.Invoke();
+                resetNodeSelection();
+            }
+        }
+    }
+
     public void ListenToModeChange(string pNewMode)
     {
         currentMode = pNewMode;
@@ -180,7 +197,7 @@ public class NodeEditor : MonoBehaviour
             if (positions[i].z > mostTop) mostTop = positions[i].z;
             if (positions[i].z < mostBottom) mostBottom = positions[i].z;
         }
-        
+
         //HORIZONTAL ALIGNMENT
         //Is the top left corner "less left" than the bottom left? Then relocate topleft.x to the bottomleft.x
         if (outerCorners[0].x < outerCorners[3].x)
@@ -200,30 +217,30 @@ public class NodeEditor : MonoBehaviour
             outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, outerCorners[0].z);
         //Else, relocate topright.z to topleft.z
         else outerCorners[0] = new Vector3(outerCorners[0].x, 0.5f, outerCorners[1].z);
-        
+
         if (outerCorners[2].z > outerCorners[3].z)
             outerCorners[3] = new Vector3(outerCorners[3].x, 0.5f, outerCorners[2].z);
         else outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, outerCorners[3].z);
-        
+
         ///////
         if (outerCorners[0].x > mostLeft || outerCorners[3].x > mostLeft)
         {
             outerCorners[0] = new Vector3(mostLeft, 0.5f, outerCorners[0].z);
             outerCorners[3] = new Vector3(mostLeft, 0.5f, outerCorners[3].z);
         }
-        
+
         if (outerCorners[1].x < mostRight || outerCorners[2].x < mostRight)
         {
             outerCorners[1] = new Vector3(mostRight, 0.5f, outerCorners[1].z);
             outerCorners[2] = new Vector3(mostRight, 0.5f, outerCorners[2].z);
         }
-        
+
         if (outerCorners[0].z < mostTop || outerCorners[1].z < mostTop)
         {
             outerCorners[0] = new Vector3(outerCorners[0].x, 0.5f, mostTop);
             outerCorners[1] = new Vector3(outerCorners[1].x, 0.5f, mostTop);
         }
-        
+
         if (outerCorners[2].z > mostBottom || outerCorners[3].z > mostBottom)
         {
             outerCorners[2] = new Vector3(outerCorners[2].x, 0.5f, mostBottom);
@@ -235,7 +252,7 @@ public class NodeEditor : MonoBehaviour
     {
         int gridWidth = Mathf.FloorToInt(outerCorners[1].x - outerCorners[0].x);
         int gridHeight = Mathf.FloorToInt(outerCorners[1].z - outerCorners[2].z);
-    
+
         Vector3 offset = new Vector3(1, 0, 1);
         Vector3 buildingSize = new Vector3(3, 0, 3);
         int xDivision = Mathf.RoundToInt(buildingSize.x + offset.x);
@@ -246,12 +263,13 @@ public class NodeEditor : MonoBehaviour
 
         Vector3 topLeft = outerCorners[0];
         spawnPointsList.Add(topLeft);
-        
+
         for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
             {
-                Vector3 spawnPoint = new Vector3(topLeft.x + (buildingSize.x + offset.x) * x, 0f, topLeft.z - (buildingSize.z + offset.z) * z);
+                Vector3 spawnPoint = new Vector3(topLeft.x + (buildingSize.x + offset.x) * x, 0f,
+                    topLeft.z - (buildingSize.z + offset.z) * z);
                 spawnPointsList.Add(spawnPoint);
             }
         }
@@ -331,13 +349,13 @@ public class NodeEditor : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-
-        if (currentlySelectedNode != null) Handles.Label(currentlySelectedNode.position, "Currently selected node");
-
+        
         for (int nodeInListIndex = 0; nodeInListIndex < allNodes.Count; nodeInListIndex++)
         {
             Vector3 currentNodePos = allNodes[nodeInListIndex].position;
 
+            if (allNodes[nodeInListIndex] == currentlySelectedNode) Gizmos.color = Color.magenta;
+            else Gizmos.color = Color.red;
             Gizmos.DrawSphere(currentNodePos, 1.5f);
 
             if (allNodes[nodeInListIndex].connectedNodes.Count == 0) continue;
@@ -359,15 +377,15 @@ public class NodeEditor : MonoBehaviour
             Gizmos.DrawSphere(outerCorners[i], 2f);
             Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
             Handles.Label(labelPosition, $"index: {i}");
-            
+
             int previousIndex = i - 1;
             if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
 
             int currentIndex = i;
-                
+
             int nextIndex = i + 1;
             if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
-                
+
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
         }
