@@ -54,24 +54,7 @@ public class CityBlockGenerator : MonoBehaviour
     {
         List<Vector3> outerCorners = cityBlocksData[currentSelectedIndex].outerCorners;
 
-        Debug.Log(outerCorners.Count);
-        
-        Vector3 centroid = new Vector3();
-        centroid.y = 0.5f;
-
-        float sumX = 0;
-        float sumZ = 0;
-        for (int i = 0; i < outerCorners.Count; i++)
-        {
-            Debug.Log(outerCorners[i]);
-            sumX += outerCorners[i].x;
-            sumZ += outerCorners[i].z;
-        }
-
-        centroid.x = sumX / outerCorners.Count;
-        centroid.z = sumZ / outerCorners.Count;
-
-        cityBlocksData[currentSelectedIndex].centroid = centroid;
+        cityBlocksData[currentSelectedIndex].centroid = GridHelperClass.GetCentroidOfArea(outerCorners);
     }
 
     private void calculateInnerCorners()
@@ -101,6 +84,9 @@ public class CityBlockGenerator : MonoBehaviour
         
         int spawnpointCountX = 0;
         int spawnpointCountY = 0;
+        
+        //Start from centroid, go left/right until the x-position of the top node has been reached. 
+        //
     }
     
 

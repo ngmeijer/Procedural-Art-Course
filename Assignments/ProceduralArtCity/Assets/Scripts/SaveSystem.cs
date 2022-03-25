@@ -6,11 +6,11 @@ using UnityEngine;
 
 public class SaveSystem : MonoBehaviour
 {
-    [SerializeField] private Nodes_SO currentSaveFile;
+    [SerializeField] private CityLayout currentSaveFile;
 
     private void createSaveFile(List<Node> pReceivedNodes)
     {
-        Nodes_SO asset = ScriptableObject.CreateInstance<Nodes_SO>();
+        CityLayout asset = ScriptableObject.CreateInstance<CityLayout>();
         asset.Nodes = pReceivedNodes;
         
         AssetDatabase.CreateAsset(asset, "Assets/Scriptable Objects/SaveFile.asset");
