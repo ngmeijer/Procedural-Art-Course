@@ -43,6 +43,8 @@ public class GeneratorFSM : MonoBehaviour
           roadGenerator.onModeExit.AddListener(listenToNewGenerationMode);
           cityBlockGenerator.onModeExit.AddListener(listenToNewGenerationMode);
           currentState = nodeEditor;
+          
+          currentState.EnterState();
      }
 
      private void listenToNewNodeEditMode(NodeEditModes pNewMode)

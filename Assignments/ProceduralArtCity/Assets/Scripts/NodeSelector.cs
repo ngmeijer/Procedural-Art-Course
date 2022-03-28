@@ -63,6 +63,5 @@ public class NodeSelector : MonoBehaviour
         if (currentlySelectedNode == null) currentlySelectedNode = pHit.collider.gameObject.GetComponent<Node>();
 
         onNodeSelect.Invoke(currentlySelectedNode, mousePositionOnGround);
-        // Debug.Log(currentlySelectedNode.name);
     }
 }

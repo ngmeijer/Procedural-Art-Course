@@ -42,7 +42,7 @@ public class NodeEditor : FSM_State
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
     public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
     public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
-    [HideInInspector]public UnityEvent<NodeEditModes> onSelectNewMode = new UnityEvent<NodeEditModes>();
+    [HideInInspector] public UnityEvent<NodeEditModes> onSelectNewMode = new UnityEvent<NodeEditModes>();
 
     private bool currentlyMovingNode;
 
@@ -54,7 +54,7 @@ public class NodeEditor : FSM_State
     private float mostTop;
     private float mostBottom;
     private List<Vector3> spawnPointsList = new List<Vector3>();
-    
+
     private void Start()
     {
         NodeSelector.onNodeSelect.AddListener(determineAction);
@@ -81,18 +81,12 @@ public class NodeEditor : FSM_State
     private void Update()
     {
         if (!isActive) return;
-        if (CurrentMode == NodeEditModes.MoveNode && currentlyMovingNode)
+        
+        if (currentlyMovingNode && Input.GetMouseButtonUp(0))
         {
-            Debug.Log("currently moving node.");
-            currentlySelectedNode.position = mousePositionOnGround;
-            currentlySelectedNode.gameObject.transform.position = mousePositionOnGround;
-
-            if (Input.GetMouseButtonUp(0))
-            {
-                currentlyMovingNode = false;
-                onResetSelection.Invoke();
-                resetNodeSelection();
-            }
+            currentlyMovingNode = false;
+            onResetSelection.Invoke();
+            resetNodeSelection();
         }
     }
 
@@ -115,7 +109,7 @@ public class NodeEditor : FSM_State
     {
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
-        
+
         switch (CurrentMode)
         {
             case NodeEditModes.PlaceNode:
@@ -125,6 +119,7 @@ public class NodeEditor : FSM_State
                 removeNode();
                 break;
             case NodeEditModes.MoveNode:
+                currentlyMovingNode = true;
                 moveNode();
                 break;
             case NodeEditModes.ConnectNode:
@@ -305,9 +300,11 @@ public class NodeEditor : FSM_State
 
     private void moveNode()
     {
+        if (!currentlyMovingNode) return;
         if (currentlySelectedNode == null) return;
-
-        currentlyMovingNode = true;
+        
+        currentlySelectedNode.position = mousePositionOnGround;
+        currentlySelectedNode.gameObject.transform.position = mousePositionOnGround;
     }
 
     private void connectNode()
@@ -348,12 +345,13 @@ public class NodeEditor : FSM_State
         firstNode = null;
         secondNode = null;
         currentlySelectedNode = null;
+        Debug.Log("resetted selction");
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
-        
+
         for (int nodeInListIndex = 0; nodeInListIndex < allNodes.Count; nodeInListIndex++)
         {
             Vector3 currentNodePos = allNodes[nodeInListIndex].position;
@@ -371,7 +369,7 @@ public class NodeEditor : FSM_State
                 Vector3 connectedNodePos =
                     allNodes[nodeInListIndex].connectedNodes[connectionsInNode].position;
 
-                
+
                 Debug.DrawLine(currentNodePos, connectedNodePos);
             }
         }
