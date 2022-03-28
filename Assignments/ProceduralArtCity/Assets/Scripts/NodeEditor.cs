@@ -71,11 +71,11 @@ public class NodeEditor : FSM_State
     public override void ExitState()
     {
         destroyUnconnectedNodes();
-        calculateOuterCorners();
-        alignCornersToRectangle();
-        createSpawnpoints();
-        isActive = false;
-        onModeExit.Invoke(FSM_States.GenerateNodes);
+        // calculateOuterCorners();
+        // alignCornersToRectangle();
+        // createSpawnpoints();
+        // isActive = false;
+        // onModeExit.Invoke(FSM_States.GenerateNodes);
     }
 
     private void Update()
@@ -111,11 +111,6 @@ public class NodeEditor : FSM_State
         mousePositionOnGround = pMousePosition;
 
         if (pNode == null && CurrentMode != NodeEditModes.PlaceNode) return;
-        else if(pNode != null)
-        {
-            Debug.Log("received node: " + pNode.name);
-            Debug.Log("currently selected: " + currentlySelectedNode.name);
-        }
 
         switch (CurrentMode)
         {
@@ -292,7 +287,8 @@ public class NodeEditor : FSM_State
 
     public void removeNode(Node pNode = null)
     {
-        if (currentlySelectedNode == null && pNode == null) return;
+        if (currentlySelectedNode == null) return;
+
         if (pNode != null) currentlySelectedNode = pNode;
 
         List<Node> connectedNodes = currentlySelectedNode.connectedNodes;
@@ -300,9 +296,6 @@ public class NodeEditor : FSM_State
         {
             connectedNodes[i].connectedNodes.Remove(currentlySelectedNode);
         }
-
-        allNodes.Remove(currentlySelectedNode);
-        Destroy(currentlySelectedNode.gameObject);
     }
 
     private void moveNode()
@@ -316,16 +309,23 @@ public class NodeEditor : FSM_State
 
     private void connectNode()
     {
-        if (currentlySelectedNode == null) return;
-        if (firstNode == null) firstNode = currentlySelectedNode;
-        else
+        if (firstNode == null)
         {
-            secondNode = currentlySelectedNode;
-            firstNode.connectedNodes.Add(currentlySelectedNode);
-            secondNode.connectedNodes.Add(firstNode);
+            firstNode = currentlySelectedNode;
+            return;
         }
 
+        if (firstNode != null && secondNode == null) secondNode = currentlySelectedNode;
+
         Debug.Log($"First node's name: {firstNode.name}, Connected node's name: {currentlySelectedNode.name}");
+
+        if (firstNode != null && secondNode != null)
+        {
+            firstNode.connectedNodes.Add(currentlySelectedNode);
+            secondNode.connectedNodes.Add(firstNode);
+
+            resetNodeSelection();
+        }
     }
 
     private void disconnectNode()
@@ -342,9 +342,20 @@ public class NodeEditor : FSM_State
 
     private void destroyUnconnectedNodes()
     {
+        List<Node> nodesToRemove = new List<Node>();
         for (int i = 0; i < allNodes.Count; i++)
         {
-            if (allNodes[i].connectedNodes.Count <= 1) removeNode(allNodes[i]);
+            if (allNodes[i].connectedNodes.Count <= 1)
+            {
+                nodesToRemove.Add(allNodes[i]);
+            }
+        }
+
+        for (int i = 0; i < nodesToRemove.Count; i++)
+        {
+            allNodes[i].connectedNodes.Remove(nodesToRemove[i]);
+            allNodes.Remove(nodesToRemove[i]);
+            Destroy(nodesToRemove[i].gameObject);
         }
     }
 
