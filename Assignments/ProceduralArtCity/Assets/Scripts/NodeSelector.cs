@@ -13,7 +13,7 @@ public class NodeSelector : MonoBehaviour
 {
     private Camera cam;
     private Node currentlySelectedNode;
-    private string currentEditorMode;
+    private NodeEditModes currentEditorMode;
     private bool currentlyMovingNode;
     private Node firstNode;
     private Node secondNode;
@@ -24,7 +24,7 @@ public class NodeSelector : MonoBehaviour
     {
         cam = Camera.main;
         NodeEditor.onResetSelection.AddListener(resetNodeSelection);
-        UIManager.onClickNewMode.AddListener(changeMode);
+        GeneratorFSM.broadcastNodeEditModeChange.AddListener(changeMode);
     }
 
     private void Update()
@@ -32,7 +32,7 @@ public class NodeSelector : MonoBehaviour
         castRay();
     }
 
-    private void changeMode(string pNewMode)
+    private void changeMode(NodeEditModes pNewMode)
     {
         currentEditorMode = pNewMode;
     }
@@ -50,8 +50,8 @@ public class NodeSelector : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
-            if (Input.GetMouseButtonDown(0) && currentEditorMode != "Move") selectNode(hit);
-            else if (Input.GetMouseButton(0) && currentEditorMode == "Move") selectNode(hit);
+            if (Input.GetMouseButtonDown(0) && currentEditorMode != NodeEditModes.MoveNode) selectNode(hit);
+            else if (Input.GetMouseButton(0) && currentEditorMode == NodeEditModes.MoveNode) selectNode(hit);
         }
     }
 
@@ -63,5 +63,6 @@ public class NodeSelector : MonoBehaviour
         if (currentlySelectedNode == null) currentlySelectedNode = pHit.collider.gameObject.GetComponent<Node>();
 
         onNodeSelect.Invoke(currentlySelectedNode, mousePositionOnGround);
+        // Debug.Log(currentlySelectedNode.name);
     }
 }

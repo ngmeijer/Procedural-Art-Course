@@ -26,12 +26,12 @@ public class Event_OnResetSelection : UnityEvent
 {
 }
 
-public class NodeEditor : MonoBehaviour
+public class NodeEditor : FSM_State
 {
     private Camera cam;
     private Vector3 currentPoint;
-    [SerializeField] private GameObject nodePrefab;
-    private string currentMode;
+    private GameObject nodePrefab;
+    public NodeEditModes CurrentMode;
 
     [SerializeField] private List<Node> allNodes = new List<Node>();
     private Node currentlySelectedNode;
@@ -40,30 +40,48 @@ public class NodeEditor : MonoBehaviour
     private Vector3 mousePositionOnGround;
     public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
-    public Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
+    public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
     public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
+    [HideInInspector]public UnityEvent<NodeEditModes> onSelectNewMode = new UnityEvent<NodeEditModes>();
 
     private bool currentlyMovingNode;
 
-    [SerializeField] private List<Vector3> outerCorners = new List<Vector3>();
-    List<Vector3> positions = new List<Vector3>();
+    private List<Vector3> outerCorners = new List<Vector3>();
+    private List<Vector3> positions = new List<Vector3>();
     private Vector3 cityCentroid;
     private float mostLeft;
     private float mostRight;
     private float mostTop;
     private float mostBottom;
     private List<Vector3> spawnPointsList = new List<Vector3>();
-
+    
     private void Start()
     {
         NodeSelector.onNodeSelect.AddListener(determineAction);
-        UIManager.onClickNewMode.AddListener(ListenToModeChange);
         UIManager.onClickGenerateRoads.AddListener(ListenToRoadGenerationCommand);
+
+        nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
+    }
+
+    public override void EnterState()
+    {
+        isActive = true;
+    }
+
+    public override void ExitState()
+    {
+        destroyUnconnectedNodes();
+        calculateOuterCorners();
+        alignCornersToRectangle();
+        createSpawnpoints();
+        isActive = false;
+        onModeExit.Invoke(FSM_States.GenerateNodes);
     }
 
     private void Update()
     {
-        if (currentMode == "Move" && currentlyMovingNode)
+        if (!isActive) return;
+        if (CurrentMode == NodeEditModes.MoveNode && currentlyMovingNode)
         {
             Debug.Log("currently moving node.");
             currentlySelectedNode.position = mousePositionOnGround;
@@ -75,19 +93,6 @@ public class NodeEditor : MonoBehaviour
                 onResetSelection.Invoke();
                 resetNodeSelection();
             }
-        }
-    }
-
-    public void ListenToModeChange(string pNewMode)
-    {
-        currentMode = pNewMode;
-
-        if (currentMode == "StreetGeneration")
-        {
-            destroyUnconnectedNodes();
-            calculateOuterCorners();
-            alignCornersToRectangle();
-            createSpawnpoints();
         }
     }
 
@@ -110,26 +115,23 @@ public class NodeEditor : MonoBehaviour
     {
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
-
-        switch (currentMode)
+        
+        switch (CurrentMode)
         {
-            case "Place":
-                createNode();
+            case NodeEditModes.PlaceNode:
+                CreateNode();
                 break;
-            case "Remove":
+            case NodeEditModes.RemoveNode:
                 removeNode();
                 break;
-            case "Move":
+            case NodeEditModes.MoveNode:
                 moveNode();
                 break;
-            case "Connect":
+            case NodeEditModes.ConnectNode:
                 connectNode();
                 break;
-            case "Disconnect":
+            case NodeEditModes.DisconnectNode:
                 disconnectNode();
-                break;
-            case "Default":
-                Debug.Log("Not a valid mode for Node Editing.");
                 break;
         }
     }
@@ -275,7 +277,7 @@ public class NodeEditor : MonoBehaviour
         }
     }
 
-    private void createNode()
+    public void CreateNode()
     {
         GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, transform);
         GO_newNode.name = "Node " + allNodes.Count;
@@ -283,9 +285,10 @@ public class NodeEditor : MonoBehaviour
         Node node = GO_newNode.GetComponent<Node>();
         node.position = GO_newNode.transform.position;
         allNodes.Add(node);
+        Debug.Log("creating node");
     }
 
-    private void removeNode(Node pNode = null)
+    public void removeNode(Node pNode = null)
     {
         if (currentlySelectedNode == null && pNode == null) return;
         if (pNode != null) currentlySelectedNode = pNode;
@@ -315,8 +318,9 @@ public class NodeEditor : MonoBehaviour
         {
             firstNode.connectedNodes.Add(currentlySelectedNode);
             currentlySelectedNode.connectedNodes.Add(firstNode);
-            resetNodeSelection();
         }
+
+        Debug.Log($"First node's name: {firstNode.name}, Connected node's name: {currentlySelectedNode.name}");
     }
 
     private void disconnectNode()
@@ -367,6 +371,7 @@ public class NodeEditor : MonoBehaviour
                 Vector3 connectedNodePos =
                     allNodes[nodeInListIndex].connectedNodes[connectionsInNode].position;
 
+                
                 Debug.DrawLine(currentNodePos, connectedNodePos);
             }
         }

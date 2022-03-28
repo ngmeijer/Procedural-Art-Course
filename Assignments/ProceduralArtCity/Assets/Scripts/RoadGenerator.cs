@@ -5,7 +5,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
-public class RoadGenerator : MonoBehaviour
+public class RoadGenerator : FSM_State
 {
     public GameObject IntersectionPrefab;
     public Material roadMaterial;
@@ -13,6 +13,11 @@ public class RoadGenerator : MonoBehaviour
     public List<Node> allNodes;
     
     Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
+
+    private void Start()
+    {
+        NodeEditor.eventTransferToRoadGenerator.AddListener(InitializeStreets);
+    }
 
     public void InitializeStreets(List<Node> pNodes)
     {
@@ -172,5 +177,15 @@ public class RoadGenerator : MonoBehaviour
         {
             Handles.Label(vertexPos.Value, $"Vertex {vertexPos.Value}, ID: {vertexPos.Key}", style);
         }
+    }
+
+    public override void EnterState()
+    {
+        
+    }
+
+    public override void ExitState()
+    {
+        
     }
 }

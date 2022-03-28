@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class CityBlockGenerator : MonoBehaviour
+public class CityBlockGenerator : FSM_State
 {
     [SerializeField] private List<CityBlock> cityBlocksData = new List<CityBlock>();
     private int currentSelectedIndex = -1;
@@ -122,5 +122,15 @@ public class CityBlockGenerator : MonoBehaviour
                 Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[previousIndex]);
             }
         }
+    }
+
+    public override void EnterState()
+    {
+        
+    }
+
+    public override void ExitState()
+    {
+        
     }
 }
