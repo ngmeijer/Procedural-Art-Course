@@ -81,7 +81,7 @@ public class NodeEditor : FSM_State
     private void Update()
     {
         if (!isActive) return;
-        
+
         if (currentlyMovingNode && Input.GetMouseButtonUp(0))
         {
             currentlyMovingNode = false;
@@ -109,6 +109,13 @@ public class NodeEditor : FSM_State
     {
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
+
+        if (pNode == null && CurrentMode != NodeEditModes.PlaceNode) return;
+        else if(pNode != null)
+        {
+            Debug.Log("received node: " + pNode.name);
+            Debug.Log("currently selected: " + currentlySelectedNode.name);
+        }
 
         switch (CurrentMode)
         {
@@ -302,7 +309,7 @@ public class NodeEditor : FSM_State
     {
         if (!currentlyMovingNode) return;
         if (currentlySelectedNode == null) return;
-        
+
         currentlySelectedNode.position = mousePositionOnGround;
         currentlySelectedNode.gameObject.transform.position = mousePositionOnGround;
     }
@@ -313,8 +320,9 @@ public class NodeEditor : FSM_State
         if (firstNode == null) firstNode = currentlySelectedNode;
         else
         {
+            secondNode = currentlySelectedNode;
             firstNode.connectedNodes.Add(currentlySelectedNode);
-            currentlySelectedNode.connectedNodes.Add(firstNode);
+            secondNode.connectedNodes.Add(firstNode);
         }
 
         Debug.Log($"First node's name: {firstNode.name}, Connected node's name: {currentlySelectedNode.name}");
@@ -345,7 +353,6 @@ public class NodeEditor : FSM_State
         firstNode = null;
         secondNode = null;
         currentlySelectedNode = null;
-        Debug.Log("resetted selction");
     }
 
     private void OnDrawGizmos()

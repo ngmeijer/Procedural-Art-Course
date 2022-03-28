@@ -60,8 +60,8 @@ public class NodeSelector : MonoBehaviour
         Vector3 mousePositionOnGround = new Vector3(pHit.point.x, 0, pHit.point.z);
 
         //Refactor to cache node gameobject position and pass the cached Node component.
-        if (currentlySelectedNode == null) currentlySelectedNode = pHit.collider.gameObject.GetComponent<Node>();
-
+        currentlySelectedNode = pHit.collider.gameObject.GetComponent<Node>();
+        
         onNodeSelect.Invoke(currentlySelectedNode, mousePositionOnGround);
     }
 }
