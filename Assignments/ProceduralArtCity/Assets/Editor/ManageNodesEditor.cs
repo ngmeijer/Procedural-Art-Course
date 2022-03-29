@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor;
@@ -20,15 +21,35 @@ public class ManageNodesEditor : Editor
     {
         DrawDefaultInspector();
 
+        float inspectorWidth = EditorGUIUtility.currentViewWidth;
+        float leftSide = EditorGUIUtility.
+
         EditorGUILayout.Space(20);
         EditorGUILayout.LabelField("Node editing modes");
 
-        if (GUILayout.Button("Place")) newEditMode = NodeEditModes.PlaceNode;
-        if (GUILayout.Button("Remove")) newEditMode = NodeEditModes.RemoveNode;
-        if (GUILayout.Button("Move")) newEditMode = NodeEditModes.MoveNode;
-        if (GUILayout.Button("Connect")) newEditMode = NodeEditModes.ConnectNode;
-        if (GUILayout.Button("Disconnect")) newEditMode = NodeEditModes.DisconnectNode;
-        if (GUILayout.Button("Confirm map")) editorTarget.onModeExit.Invoke(FSM_States.GenerateNodes);
+        GUIStyle style = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 15
+        };
+        
+        GUI.backgroundColor = Color.green;
+        if (GUI.Button(new Rect(10, 100, inspectorWidth / 2, 50), "Place", style))
+            newEditMode = NodeEditModes.PlaceNode;
+
+        GUI.backgroundColor = Color.red;
+        if (GUI.Button(new Rect(300, 100, inspectorWidth / 2, 50), "Remove", style))
+            newEditMode = NodeEditModes.RemoveNode;
+
+        GUI.backgroundColor = Color.red;
+        if (GUI.Button(new Rect(10, 100, inspectorWidth / 2, 50), "Move", style))
+            newEditMode = NodeEditModes.MoveNode;
+
+        GUI.backgroundColor = Color.magenta;
+        if (GUILayout.Button("Connect", style)) newEditMode = NodeEditModes.ConnectNode;
+
+        GUI.backgroundColor = Color.grey;
+        if (GUILayout.Button("Disconnect", style)) newEditMode = NodeEditModes.DisconnectNode;
+        if (GUILayout.Button("Confirm map", style)) editorTarget.onModeExit.Invoke(FSM_States.GenerateNodes);
 
         if (newEditMode != editorTarget.CurrentMode)
         {

@@ -166,8 +166,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4fc9202fe2fdb09449006dc4461f3781, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isActive: 0
+  onModeExit:
+    m_PersistentCalls:
+      m_Calls: []
   cityBlocksData: []
-  innerOffset: 43.09
+  innerOffset: 10
 --- !u!1 &289121772
 GameObject:
   m_ObjectHideFlags: 0
@@ -294,7 +298,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6335f1694f38300419911c51f7c59863, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isActive: 0
+  onModeExit:
+    m_PersistentCalls:
+      m_Calls: []
+  CurrentMode: 0
   allNodes: []
+  onSelectNewMode:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!4 &534393406
 Transform:
   m_ObjectHideFlags: 0
@@ -662,6 +674,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5b6afb32286d0c43844c5783e99969d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isActive: 0
+  onModeExit:
+    m_PersistentCalls:
+      m_Calls: []
   IntersectionPrefab: {fileID: 5656212002587116251, guid: 577bcc8f2eb8cd64c8f4c6b58645e184, type: 3}
   roadMaterial: {fileID: 2100000, guid: d33e621ca40544c45a2ab5e5097b7483, type: 2}
   allNodes: []

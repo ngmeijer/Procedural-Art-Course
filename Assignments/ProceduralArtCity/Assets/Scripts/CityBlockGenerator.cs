@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -31,6 +32,7 @@ public class CityBlockGenerator : FSM_State
     {
         findCentroidOfBlock();
         calculateInnerCorners();
+        createMesh();
         calculateSpawnpoints();
     }
 
@@ -59,13 +61,38 @@ public class CityBlockGenerator : FSM_State
     private void findCentroidOfBlock()
     {
         List<Vector3> outerCorners = cityBlocksData[currentSelectedIndex].outerCorners;
+        
+        currentCentroidPoint = GridHelperClass.GetCentroidOfArea(outerCorners);
 
-        cityBlocksData[currentSelectedIndex].centroid = GridHelperClass.GetCentroidOfArea(outerCorners);
+        cityBlocksData[currentSelectedIndex].centroid = currentCentroidPoint;
     }
 
     private void createMesh()
     {
-        
+        GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        plane.transform.position = currentCentroidPoint;
+        plane.transform.localScale = new Vector3(3, 1, 3);
+
+        Mesh mesh = plane.GetComponent<MeshFilter>().sharedMesh;
+        Vector3[] vertices = mesh.vertices;
+
+        Dictionary<int, Vector3> verticesClosestToNodes = new Dictionary<int, Vector3>();
+
+        List<Vector3> innerCorners = cityBlocksData[currentSelectedIndex].innerCorners;
+        List<int> vertexIndices = new List<int>();
+
+        for (int i = 0; i < innerCorners.Count; i++)
+        {
+            Dictionary<Vector3, float> distancesVertexToNode = new Dictionary<Vector3, float>();
+            for (int j = 0; j < vertices.Length; j++)
+            {
+                float distance = Vector3.Distance(vertices[j], innerCorners[i]);
+                distancesVertexToNode.Add(vertices[j], distance);
+            }
+            //
+            // Vector3 closestVertex = distancesVertexToNode.Min().Key;
+            
+        }
     }
 
     private void calculateInnerCorners()

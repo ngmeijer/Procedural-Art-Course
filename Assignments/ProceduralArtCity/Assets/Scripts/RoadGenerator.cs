@@ -40,6 +40,7 @@ public class RoadGenerator : FSM_State
         
         CreateIntersections();
         CreateRoads();
+        onModeExit.Invoke(FSM_States.GenerateRoads);
     }
 
     public void CreateIntersections()
