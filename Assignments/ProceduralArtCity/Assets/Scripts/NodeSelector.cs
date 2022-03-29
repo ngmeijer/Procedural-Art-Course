@@ -50,7 +50,10 @@ public class NodeSelector : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         if (Physics.Raycast(ray, out hit, Mathf.Infinity))
         {
-            if (Input.GetMouseButtonDown(0) && currentEditorMode != NodeEditModes.MoveNode) selectNode(hit);
+            if (Input.GetMouseButtonDown(0) && currentEditorMode != NodeEditModes.MoveNode)
+            {
+                selectNode(hit);
+            }
             else if (Input.GetMouseButton(0) && currentEditorMode == NodeEditModes.MoveNode) selectNode(hit);
         }
     }

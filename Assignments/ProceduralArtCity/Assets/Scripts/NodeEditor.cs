@@ -58,7 +58,6 @@ public class NodeEditor : FSM_State
     private void Start()
     {
         NodeSelector.onNodeSelect.AddListener(determineAction);
-        UIManager.onClickGenerateRoads.AddListener(ListenToRoadGenerationCommand);
 
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
     }
@@ -71,11 +70,10 @@ public class NodeEditor : FSM_State
     public override void ExitState()
     {
         destroyUnconnectedNodes();
-        // calculateOuterCorners();
-        // alignCornersToRectangle();
-        // createSpawnpoints();
-        // isActive = false;
-        // onModeExit.Invoke(FSM_States.GenerateNodes);
+        calculateOuterCorners();
+        alignCornersToRectangle();
+        createSpawnpoints();
+        isActive = false;
     }
 
     private void Update()
@@ -90,7 +88,7 @@ public class NodeEditor : FSM_State
         }
     }
 
-    public void ListenToRoadGenerationCommand()
+    public void transferNodes()
     {
         eventTransferToRoadGenerator.Invoke(allNodes);
     }
@@ -119,6 +117,8 @@ public class NodeEditor : FSM_State
                 break;
             case NodeEditModes.RemoveNode:
                 removeNode();
+                allNodes.Remove(pNode);
+                Destroy(pNode.gameObject);
                 break;
             case NodeEditModes.MoveNode:
                 currentlyMovingNode = true;
@@ -135,6 +135,8 @@ public class NodeEditor : FSM_State
 
     private void calculateOuterCorners()
     {
+        Debug.Log("calculating outer corners");
+        
         for (int i = 0; i < allNodes.Count; i++)
         {
             positions.Add(allNodes[i].position);
@@ -166,7 +168,6 @@ public class NodeEditor : FSM_State
             if (positions[i].x > currentBottomRight.x && positions[i].z < currentBottomRight.z)
             {
                 currentBottomRight = positions[i];
-                Debug.Log($"{currentBottomRight}");
             }
 
             if (positions[i].x < currentBottomLeft.x && positions[i].z < currentBottomLeft.z)
@@ -282,13 +283,12 @@ public class NodeEditor : FSM_State
         Node node = GO_newNode.GetComponent<Node>();
         node.position = GO_newNode.transform.position;
         allNodes.Add(node);
-        Debug.Log("creating node");
     }
 
     public void removeNode(Node pNode = null)
     {
         if (currentlySelectedNode == null) return;
-
+        
         if (pNode != null) currentlySelectedNode = pNode;
 
         List<Node> connectedNodes = currentlySelectedNode.connectedNodes;
@@ -316,9 +316,7 @@ public class NodeEditor : FSM_State
         }
 
         if (firstNode != null && secondNode == null) secondNode = currentlySelectedNode;
-
-        Debug.Log($"First node's name: {firstNode.name}, Connected node's name: {currentlySelectedNode.name}");
-
+        
         if (firstNode != null && secondNode != null)
         {
             firstNode.connectedNodes.Add(currentlySelectedNode);
@@ -356,7 +354,7 @@ public class NodeEditor : FSM_State
             allNodes[i].connectedNodes.Remove(nodesToRemove[i]);
             allNodes.Remove(nodesToRemove[i]);
             Destroy(nodesToRemove[i].gameObject);
-        }
+        } 
     }
 
     private void resetNodeSelection()
@@ -416,5 +414,8 @@ public class NodeEditor : FSM_State
         {
             Gizmos.DrawSphere(spawnPointsList[i], 0.5f);
         }
+        
+        
+        if(firstNode != null) Handles.DrawLine(firstNode.position, mousePositionOnGround);
     }
 }

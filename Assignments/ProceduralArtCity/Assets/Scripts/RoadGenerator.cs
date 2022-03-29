@@ -16,13 +16,28 @@ public class RoadGenerator : FSM_State
 
     private void Start()
     {
-        NodeEditor.eventTransferToRoadGenerator.AddListener(InitializeStreets);
+        NodeEditor.eventTransferToRoadGenerator.AddListener(ReceiveNodeData);
+    }
+    
+    public override void EnterState()
+    {
+        isActive = true;
     }
 
-    public void InitializeStreets(List<Node> pNodes)
+    public override void ExitState()
+    {
+        isActive = false;
+    }
+
+    public void ReceiveNodeData(List<Node> pNodes)
     {
         allNodes = pNodes;
+    }
 
+    public void InitializeRoads()
+    {
+        if (!isActive) return;
+        
         CreateIntersections();
         CreateRoads();
     }
@@ -177,15 +192,5 @@ public class RoadGenerator : FSM_State
         {
             Handles.Label(vertexPos.Value, $"Vertex {vertexPos.Value}, ID: {vertexPos.Key}", style);
         }
-    }
-
-    public override void EnterState()
-    {
-        
-    }
-
-    public override void ExitState()
-    {
-        
     }
 }

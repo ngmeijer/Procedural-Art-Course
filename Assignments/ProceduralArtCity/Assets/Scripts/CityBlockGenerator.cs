@@ -13,37 +13,43 @@ public class CityBlockGenerator : FSM_State
 
     private void Start()
     {
-        UIManager.onClickNewMode.AddListener(checkMode);
         NodeSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
-        UIManager.onCityBlockFinish.AddListener(createCityBlock);
-        createEmptyCityBlock();
+        UIManager.onCityBlockFinish.AddListener(FinishCityBlock);
+    }
+    
+    public override void EnterState()
+    {
+        isActive = true;
     }
 
-    private void createCityBlock()
+    public override void ExitState()
+    {
+        isActive = false;
+    }
+
+    public void FinishCityBlock()
     {
         findCentroidOfBlock();
         calculateInnerCorners();
-        createEmptyCityBlock();
         calculateSpawnpoints();
     }
 
-    private void checkMode(string pNewMode)
-    {
-        if (pNewMode != "CityBlockGeneration") return;
-
-        generatorActive = true; 
-    }
-
-    private void createEmptyCityBlock()
+    public void CreateEmptyCityBlock()
     {
         CityBlock cityBlock = new CityBlock();
         cityBlocksData.Add(cityBlock);
         currentSelectedIndex++;
     }
 
+    public void DiscardCurrentCityBlock()
+    {
+        cityBlocksData.RemoveAt(cityBlocksData.Count - 1);
+        currentSelectedIndex--;
+    }
+
     private void addNodeToCityBlockCorners(Node pNode, Vector3 pMousePosition)
     {
-        if (!generatorActive) return;
+        if (!isActive) return;
         if (pNode == null) return;
 
         if (!cityBlocksData[currentSelectedIndex].outerCorners.Contains(pNode.position))
@@ -55,6 +61,11 @@ public class CityBlockGenerator : FSM_State
         List<Vector3> outerCorners = cityBlocksData[currentSelectedIndex].outerCorners;
 
         cityBlocksData[currentSelectedIndex].centroid = GridHelperClass.GetCentroidOfArea(outerCorners);
+    }
+
+    private void createMesh()
+    {
+        
     }
 
     private void calculateInnerCorners()
@@ -122,15 +133,5 @@ public class CityBlockGenerator : FSM_State
                 Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[previousIndex]);
             }
         }
-    }
-
-    public override void EnterState()
-    {
-        
-    }
-
-    public override void ExitState()
-    {
-        
     }
 }
