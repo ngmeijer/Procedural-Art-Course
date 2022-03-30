@@ -7,7 +7,6 @@ public static class GridHelperClass
     {
         Vector3 centroid = new Vector3 {y = 0.5f};
 
-
         float sumX = 0;
         float sumZ = 0;
         for (int i = 0; i < pPositions.Count; i++)

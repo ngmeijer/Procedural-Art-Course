@@ -47,13 +47,17 @@ public class NodeEditor : FSM_State
     private bool currentlyMovingNode;
 
     private List<Vector3> outerCorners = new List<Vector3>();
-    private List<Vector3> positions = new List<Vector3>();
+    private List<Vector3> nodePositions = new List<Vector3>();
     private Vector3 cityCentroid;
     private float mostLeft;
     private float mostRight;
     private float mostTop;
     private float mostBottom;
     private List<Vector3> spawnPointsList = new List<Vector3>();
+
+    [SerializeField] private Vector3 buildingSize;
+    [SerializeField] private Vector3 buildingOffset;
+    public bool HasCalculatedSpawnpoints;
 
     private void Start()
     {
@@ -69,11 +73,18 @@ public class NodeEditor : FSM_State
 
     public override void ExitState()
     {
+        isActive = false;
+    }
+
+    public void RecalculateSpawnpoints()
+    {
+        clearOldData();
         destroyUnconnectedNodes();
         calculateOuterCorners();
         alignCornersToRectangle();
         createSpawnpoints();
-        isActive = false;
+
+        HasCalculatedSpawnpoints = true;
     }
 
     private void Update()
@@ -86,6 +97,13 @@ public class NodeEditor : FSM_State
             onResetSelection.Invoke();
             resetNodeSelection();
         }
+    }
+
+    private void clearOldData()
+    {
+        nodePositions.Clear();
+        outerCorners.Clear();
+        spawnPointsList.Clear();
     }
 
     public void transferNodes()
@@ -135,20 +153,18 @@ public class NodeEditor : FSM_State
 
     private void calculateOuterCorners()
     {
-        Debug.Log("calculating outer corners");
-        
         for (int i = 0; i < allNodes.Count; i++)
         {
-            positions.Add(allNodes[i].position);
+            nodePositions.Add(allNodes[i].position);
         }
 
-        cityCentroid = GridHelperClass.GetCentroidOfArea(positions);
+        cityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
 
         Dictionary<Vector3, float> distancesToCentroid = new Dictionary<Vector3, float>();
-        for (int i = 0; i < positions.Count; i++)
+        for (int i = 0; i < nodePositions.Count; i++)
         {
-            float distance = Vector3.Distance(cityCentroid, positions[i]);
-            distancesToCentroid.Add(positions[i], distance);
+            float distance = Vector3.Distance(cityCentroid, nodePositions[i]);
+            distancesToCentroid.Add(nodePositions[i], distance);
         }
 
         Dictionary<Vector3, float> highestDistances = distancesToCentroid.OrderByDescending(pair => pair.Value).Take(4)
@@ -161,19 +177,19 @@ public class NodeEditor : FSM_State
         Vector3 currentBottomRight = cityCentroid;
         Vector3 currentBottomLeft = cityCentroid;
 
-        for (int i = 0; i < positions.Count; i++)
+        for (int i = 0; i < nodePositions.Count; i++)
         {
-            if (positions[i].x > currentTopRight.x && positions[i].z > currentTopRight.z)
-                currentTopRight = positions[i];
-            if (positions[i].x > currentBottomRight.x && positions[i].z < currentBottomRight.z)
+            if (nodePositions[i].x > currentTopRight.x && nodePositions[i].z > currentTopRight.z)
+                currentTopRight = nodePositions[i];
+            if (nodePositions[i].x > currentBottomRight.x && nodePositions[i].z < currentBottomRight.z)
             {
-                currentBottomRight = positions[i];
+                currentBottomRight = nodePositions[i];
             }
 
-            if (positions[i].x < currentBottomLeft.x && positions[i].z < currentBottomLeft.z)
-                currentBottomLeft = positions[i];
-            if (positions[i].x < currentTopLeft.x && positions[i].z > currentTopLeft.z)
-                currentTopLeft = positions[i];
+            if (nodePositions[i].x < currentBottomLeft.x && nodePositions[i].z < currentBottomLeft.z)
+                currentBottomLeft = nodePositions[i];
+            if (nodePositions[i].x < currentTopLeft.x && nodePositions[i].z > currentTopLeft.z)
+                currentTopLeft = nodePositions[i];
         }
 
         outerCorners.Clear();
@@ -190,12 +206,12 @@ public class NodeEditor : FSM_State
         mostTop = cityCentroid.z;
         mostBottom = cityCentroid.z;
 
-        for (int i = 0; i < positions.Count; i++)
+        for (int i = 0; i < nodePositions.Count; i++)
         {
-            if (positions[i].x < mostLeft) mostLeft = positions[i].x;
-            if (positions[i].x > mostRight) mostRight = positions[i].x;
-            if (positions[i].z > mostTop) mostTop = positions[i].z;
-            if (positions[i].z < mostBottom) mostBottom = positions[i].z;
+            if (nodePositions[i].x < mostLeft) mostLeft = nodePositions[i].x;
+            if (nodePositions[i].x > mostRight) mostRight = nodePositions[i].x;
+            if (nodePositions[i].z > mostTop) mostTop = nodePositions[i].z;
+            if (nodePositions[i].z < mostBottom) mostBottom = nodePositions[i].z;
         }
 
         //HORIZONTAL ALIGNMENT
@@ -253,10 +269,8 @@ public class NodeEditor : FSM_State
         int gridWidth = Mathf.FloorToInt(outerCorners[1].x - outerCorners[0].x);
         int gridHeight = Mathf.FloorToInt(outerCorners[1].z - outerCorners[2].z);
 
-        Vector3 offset = new Vector3(1, 0, 1);
-        Vector3 buildingSize = new Vector3(3, 0, 3);
-        int xDivision = Mathf.RoundToInt(buildingSize.x + offset.x);
-        int zDivision = Mathf.RoundToInt(buildingSize.z + offset.z);
+        int xDivision = Mathf.RoundToInt(buildingSize.x + buildingOffset.x);
+        int zDivision = Mathf.RoundToInt(buildingSize.z + buildingOffset.z);
 
         int countX = gridWidth / xDivision;
         int countZ = gridHeight / zDivision;
@@ -268,8 +282,8 @@ public class NodeEditor : FSM_State
         {
             for (int z = 0; z < countZ; z++)
             {
-                Vector3 spawnPoint = new Vector3(topLeft.x + (buildingSize.x + offset.x) * x, 0f,
-                    topLeft.z - (buildingSize.z + offset.z) * z);
+                Vector3 spawnPoint = new Vector3(topLeft.x + (buildingSize.x + buildingOffset.x) * x, 0f,
+                    topLeft.z - (buildingSize.z + buildingOffset.z) * z);
                 spawnPointsList.Add(spawnPoint);
             }
         }

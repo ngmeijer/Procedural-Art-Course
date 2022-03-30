@@ -81,7 +81,7 @@ public class UIManager : MonoBehaviour
     {
         GUI.Label(new Rect(10, 10, 100, 50), "Mode:", labelStyle);
         GUI.Label(new Rect(100, 10, 100, 50), currentMode, labelStyle);
-        GUI.Label(new Rect(10, 360, 100, 50), modeInstructions, labelStyle);
-        GUI.Label(new Rect(2000, 150, 100, 50), "Press TAB to \nlock/unlock \ncamera movement", labelStyle);
+        GUI.Label(new Rect(10, 70, 100, 50), modeInstructions, labelStyle);
+        GUI.Label(new Rect(10, 130, 100, 50), "Press TAB to \nlock/unlock \ncamera movement", labelStyle);
     }
 }

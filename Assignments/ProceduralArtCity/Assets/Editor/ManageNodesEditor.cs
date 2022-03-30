@@ -22,7 +22,6 @@ public class ManageNodesEditor : Editor
         DrawDefaultInspector();
 
         float inspectorWidth = EditorGUIUtility.currentViewWidth;
-        float leftSide = EditorGUIUtility.
 
         EditorGUILayout.Space(20);
         EditorGUILayout.LabelField("Node editing modes");
@@ -31,25 +30,33 @@ public class ManageNodesEditor : Editor
         {
             fontSize = 15
         };
-        
+
         GUI.backgroundColor = Color.green;
-        if (GUI.Button(new Rect(10, 100, inspectorWidth / 2, 50), "Place", style))
-            newEditMode = NodeEditModes.PlaceNode;
+        if (GUILayout.Button("Place", style)) newEditMode = NodeEditModes.PlaceNode;
 
         GUI.backgroundColor = Color.red;
-        if (GUI.Button(new Rect(300, 100, inspectorWidth / 2, 50), "Remove", style))
+        if (GUILayout.Button("Remove", style))
             newEditMode = NodeEditModes.RemoveNode;
 
-        GUI.backgroundColor = Color.red;
-        if (GUI.Button(new Rect(10, 100, inspectorWidth / 2, 50), "Move", style))
-            newEditMode = NodeEditModes.MoveNode;
+        GUI.backgroundColor = Color.yellow;
+        if (GUILayout.Button("Move", style)) newEditMode = NodeEditModes.MoveNode;
 
         GUI.backgroundColor = Color.magenta;
         if (GUILayout.Button("Connect", style)) newEditMode = NodeEditModes.ConnectNode;
 
-        GUI.backgroundColor = Color.grey;
+        GUI.backgroundColor = Color.cyan;
         if (GUILayout.Button("Disconnect", style)) newEditMode = NodeEditModes.DisconnectNode;
-        if (GUILayout.Button("Confirm map", style)) editorTarget.onModeExit.Invoke(FSM_States.GenerateNodes);
+        
+        EditorGUILayout.Space(20);
+        GUI.backgroundColor = Color.gray;
+        if (GUILayout.Button("Recalculate spawnpoints", style)) editorTarget.RecalculateSpawnpoints();
+        
+        GUI.backgroundColor = Color.grey;
+        if (GUILayout.Button("Confirm map", style))
+        {
+            if (!editorTarget.HasCalculatedSpawnpoints) return;
+            editorTarget.onModeExit.Invoke(FSM_States.GenerateNodes);
+        }
 
         if (newEditMode != editorTarget.CurrentMode)
         {

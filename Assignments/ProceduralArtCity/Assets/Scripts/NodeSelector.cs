@@ -30,6 +30,8 @@ public class NodeSelector : MonoBehaviour
     private void Update()
     {
         castRay();
+        
+        if(Input.GetMouseButtonDown(1)) resetNodeSelection();
     }
 
     private void changeMode(NodeEditModes pNewMode)
@@ -42,6 +44,8 @@ public class NodeSelector : MonoBehaviour
         firstNode = null;
         secondNode = null;
         currentlySelectedNode = null;
+        
+        onNodeSelect.Invoke(null, Vector3.zero);
     }
 
     private void castRay()
