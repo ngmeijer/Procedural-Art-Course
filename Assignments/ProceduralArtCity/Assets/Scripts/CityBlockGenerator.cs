@@ -190,11 +190,10 @@ public class CityBlockGenerator : FSM_State
             Vector3 centroid = cityBlocksData[i].centroid;
             Mesh spawnAreaMesh = cityBlocksData[i].spawnAreaMesh;
 
-            if (centroid != Vector3.zero) Gizmos.DrawSphere(centroid, 2f);
+            if (centroid != Vector3.zero) Gizmos.DrawWireSphere(centroid, 2f);
             Gizmos.color = Color.cyan;
             if (spawnAreaMesh != null) Gizmos.DrawMesh(spawnAreaMesh, centroid, Quaternion.identity);
-
-
+            
             List<Vector3> innerCorners = cityBlocksData[i].innerCorners;
             for (int j = 0; j < innerCorners.Count; j++)
             {

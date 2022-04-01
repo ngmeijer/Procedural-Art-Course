@@ -31,6 +31,7 @@ public class NodeEditor : FSM_State
     private Camera cam;
     private Vector3 currentPoint;
     private GameObject nodePrefab;
+    private GameObject spawnpointPrefab;
     public NodeEditModes CurrentMode;
 
     [SerializeField] private List<Node> allNodes = new List<Node>();
@@ -53,7 +54,7 @@ public class NodeEditor : FSM_State
     private float mostRight;
     private float mostTop;
     private float mostBottom;
-    private List<Vector3> spawnPointsList = new List<Vector3>();
+    private List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
     [SerializeField] private Vector3 buildingSize;
     [SerializeField] private Vector3 buildingOffset;
@@ -64,6 +65,7 @@ public class NodeEditor : FSM_State
         NodeSelector.onNodeSelect.AddListener(determineAction);
 
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
+        spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
     }
 
     public override void EnterState()
@@ -124,7 +126,7 @@ public class NodeEditor : FSM_State
     private void determineAction(Node pNode, Vector3 pMousePosition)
     {
         if (!isActive) return;
-        
+
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
 
@@ -268,28 +270,30 @@ public class NodeEditor : FSM_State
 
     private void createSpawnpoints()
     {
-        int gridWidth = Mathf.FloorToInt(outerCorners[1].x - outerCorners[0].x);
-        int gridHeight = Mathf.FloorToInt(outerCorners[1].z - outerCorners[2].z);
+        int gridWidth = Mathf.CeilToInt(outerCorners[1].x - outerCorners[0].x);
+        int gridHeight = Mathf.CeilToInt(outerCorners[1].z - outerCorners[2].z);
 
-        int xDivision = Mathf.RoundToInt(buildingSize.x + buildingOffset.x);
-        int zDivision = Mathf.RoundToInt(buildingSize.z + buildingOffset.z);
+        int xDivision = Mathf.CeilToInt(buildingSize.x + buildingOffset.x);
+        int zDivision = Mathf.CeilToInt(buildingSize.z + buildingOffset.z);
 
         int countX = gridWidth / xDivision;
         int countZ = gridHeight / zDivision;
 
-        Vector3 topLeft = outerCorners[0];
-        spawnPointsList.Add(topLeft);
-
-        Vector3 spawnPoint = Vector3.zero;
+        Vector3 startPosition = outerCorners[0];
 
         for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
             {
-                spawnPoint.x = topLeft.x + (buildingSize.x + buildingOffset.x) * x;
-                spawnPoint.z = topLeft.z - (buildingSize.z + buildingOffset.z) * z;
+                Vector3 position = new Vector3(startPosition.x + (buildingSize.x + buildingOffset.x) * x,
+                    0f,
+                    startPosition.z - (buildingSize.z + buildingOffset.z) * z);
+                GameObject newSpawnpointGO = Instantiate(spawnpointPrefab, position, Quaternion.identity, this.transform);
+                Spawnpoint newSpawnpointData = newSpawnpointGO.GetComponent<Spawnpoint>();
                 
-                spawnPointsList.Add(spawnPoint);
+                newSpawnpointData.position = position;
+
+                spawnPointsList.Add(newSpawnpointData);
             }
         }
     }
@@ -307,7 +311,7 @@ public class NodeEditor : FSM_State
     public void removeNode(Node pNode = null)
     {
         if (currentlySelectedNode == null) return;
-        
+
         if (pNode != null) currentlySelectedNode = pNode;
 
         List<Node> connectedNodes = currentlySelectedNode.connectedNodes;
@@ -335,7 +339,7 @@ public class NodeEditor : FSM_State
         }
 
         if (firstNode != null && secondNode == null) secondNode = currentlySelectedNode;
-        
+
         if (firstNode != null && secondNode != null)
         {
             firstNode.connectedNodes.Add(currentlySelectedNode);
@@ -373,7 +377,7 @@ public class NodeEditor : FSM_State
             allNodes[i].connectedNodes.Remove(nodesToRemove[i]);
             allNodes.Remove(nodesToRemove[i]);
             Destroy(nodesToRemove[i].gameObject);
-        } 
+        }
     }
 
     private void resetNodeSelection()
@@ -431,10 +435,10 @@ public class NodeEditor : FSM_State
         Gizmos.color = Color.white;
         for (int i = 0; i < spawnPointsList.Count; i++)
         {
-            Gizmos.DrawSphere(spawnPointsList[i], 0.5f);
+            Gizmos.DrawSphere(spawnPointsList[i].position, 0.5f);
         }
-        
-        
-        if(firstNode != null) Handles.DrawLine(firstNode.position, mousePositionOnGround);
+
+
+        if (firstNode != null) Handles.DrawLine(firstNode.position, mousePositionOnGround);
     }
 }
