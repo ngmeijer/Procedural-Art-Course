@@ -30,22 +30,25 @@ public class ManageNodesEditor : Editor
         {
             fontSize = 15
         };
-
+        
+        GUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("Place", style)) newEditMode = NodeEditModes.PlaceNode;
+        if (GUILayout.Button("Place", style, GUILayout.Height(40))) newEditMode = NodeEditModes.PlaceNode;
 
         GUI.backgroundColor = Color.red;
-        if (GUILayout.Button("Remove", style))
+        if (GUILayout.Button("Remove", style, GUILayout.Height(40)))
             newEditMode = NodeEditModes.RemoveNode;
 
         GUI.backgroundColor = Color.yellow;
-        if (GUILayout.Button("Move", style)) newEditMode = NodeEditModes.MoveNode;
+        if (GUILayout.Button("Move", style, GUILayout.Height(40))) newEditMode = NodeEditModes.MoveNode;
 
         GUI.backgroundColor = Color.magenta;
-        if (GUILayout.Button("Connect", style)) newEditMode = NodeEditModes.ConnectNode;
+        if (GUILayout.Button("Connect", style,GUILayout.Height(40))) newEditMode = NodeEditModes.ConnectNode;
 
         GUI.backgroundColor = Color.cyan;
-        if (GUILayout.Button("Disconnect", style)) newEditMode = NodeEditModes.DisconnectNode;
+        if (GUILayout.Button("Disconnect", style, GUILayout.Height(40))) newEditMode = NodeEditModes.DisconnectNode;
+        
+        GUILayout.EndHorizontal();
         
         EditorGUILayout.Space(20);
         GUI.backgroundColor = Color.gray;

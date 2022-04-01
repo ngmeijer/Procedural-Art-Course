@@ -123,6 +123,8 @@ public class NodeEditor : FSM_State
 
     private void determineAction(Node pNode, Vector3 pMousePosition)
     {
+        if (!isActive) return;
+        
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
 
@@ -278,12 +280,15 @@ public class NodeEditor : FSM_State
         Vector3 topLeft = outerCorners[0];
         spawnPointsList.Add(topLeft);
 
+        Vector3 spawnPoint = Vector3.zero;
+
         for (int x = 0; x < countX; x++)
         {
             for (int z = 0; z < countZ; z++)
             {
-                Vector3 spawnPoint = new Vector3(topLeft.x + (buildingSize.x + buildingOffset.x) * x, 0f,
-                    topLeft.z - (buildingSize.z + buildingOffset.z) * z);
+                spawnPoint.x = topLeft.x + (buildingSize.x + buildingOffset.x) * x;
+                spawnPoint.z = topLeft.z - (buildingSize.z + buildingOffset.z) * z;
+                
                 spawnPointsList.Add(spawnPoint);
             }
         }
