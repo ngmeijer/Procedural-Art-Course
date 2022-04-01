@@ -32,7 +32,7 @@ public class NodeEditor : FSM_State
     private Vector3 currentPoint;
     private GameObject nodePrefab;
     private GameObject spawnpointPrefab;
-    public NodeEditModes CurrentMode;
+    public Node_EditModes CurrentMode;
 
     [SerializeField] private List<Node> allNodes = new List<Node>();
     private Node currentlySelectedNode;
@@ -43,7 +43,7 @@ public class NodeEditor : FSM_State
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
     public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
     public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
-    [HideInInspector] public UnityEvent<NodeEditModes> onSelectNewMode = new UnityEvent<NodeEditModes>();
+    [HideInInspector] public UnityEvent<Node_EditModes> onSelectNewMode = new UnityEvent<Node_EditModes>();
 
     private bool currentlyMovingNode;
 
@@ -62,7 +62,7 @@ public class NodeEditor : FSM_State
 
     private void Start()
     {
-        NodeSelector.onNodeSelect.AddListener(determineAction);
+        PointSelector.onNodeSelect.AddListener(determineAction);
 
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
         spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
@@ -126,30 +126,31 @@ public class NodeEditor : FSM_State
     private void determineAction(Node pNode, Vector3 pMousePosition)
     {
         if (!isActive) return;
-
+        
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
 
-        if (pNode == null && CurrentMode != NodeEditModes.PlaceNode) return;
+        if (pMousePosition == Vector3.zero) return;
+        if (pNode == null && CurrentMode != Node_EditModes.PlaceNode) return;
 
         switch (CurrentMode)
         {
-            case NodeEditModes.PlaceNode:
-                CreateNode();
+            case Node_EditModes.PlaceNode:
+                createNode();
                 break;
-            case NodeEditModes.RemoveNode:
+            case Node_EditModes.RemoveNode:
                 removeNode();
                 allNodes.Remove(pNode);
                 Destroy(pNode.gameObject);
                 break;
-            case NodeEditModes.MoveNode:
+            case Node_EditModes.MoveNode:
                 currentlyMovingNode = true;
                 moveNode();
                 break;
-            case NodeEditModes.ConnectNode:
+            case Node_EditModes.ConnectNode:
                 connectNode();
                 break;
-            case NodeEditModes.DisconnectNode:
+            case Node_EditModes.DisconnectNode:
                 disconnectNode();
                 break;
         }
@@ -298,7 +299,7 @@ public class NodeEditor : FSM_State
         }
     }
 
-    public void CreateNode()
+    private void createNode()
     {
         GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, transform);
         GO_newNode.name = "Node " + allNodes.Count;
@@ -308,7 +309,7 @@ public class NodeEditor : FSM_State
         allNodes.Add(node);
     }
 
-    public void removeNode(Node pNode = null)
+    private void removeNode(Node pNode = null)
     {
         if (currentlySelectedNode == null) return;
 
@@ -431,14 +432,5 @@ public class NodeEditor : FSM_State
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
         }
-
-        Gizmos.color = Color.white;
-        for (int i = 0; i < spawnPointsList.Count; i++)
-        {
-            Gizmos.DrawSphere(spawnPointsList[i].position, 0.5f);
-        }
-
-
-        if (firstNode != null) Handles.DrawLine(firstNode.position, mousePositionOnGround);
     }
 }

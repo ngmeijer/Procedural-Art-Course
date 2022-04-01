@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
 [System.Serializable]
-public class Spawnpoint : MonoBehaviour
+public class Spawnpoint : ClickablePoint
 {
-    public Vector3 position;
 }

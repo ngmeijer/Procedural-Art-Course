@@ -11,10 +11,15 @@ public class CityBlockGenerator : FSM_State
     private int currentSelectedIndex = -1;
     private Vector3 currentCentroidPoint;
     private bool generatorActive;
+    private Vector3 mousePositionOnGround;
     [SerializeField] private float innerOffset = 3f;
 
-    [SerializeField]private List<Vector3> planeOuterVertices = new List<Vector3>();
+    [SerializeField] private List<Vector3> planeOuterVertices = new List<Vector3>();
+    [SerializeField] private Vector3 buildingSize = new Vector3(5,5,5);
+    [SerializeField] private Vector3 buildingOffset = new Vector3(2, 2, 2);
 
+    [SerializeField] private GameObject buildingPrefab;
+    
     private int[] vertexIndices = new int[]
     {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 32, 43, 54, 65, 76, 87, 98, 109, 120,
@@ -22,11 +27,14 @@ public class CityBlockGenerator : FSM_State
     };
 
     private Dictionary<int, Vector3> planeClosestVertices = new Dictionary<int, Vector3>();
-    
+
     private void Start()
     {
-        NodeSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
+        PointSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
+        PointSelector.onSpawnpointSelect.AddListener(addSpawnpointToCityBlock);
         UIManager.onCityBlockFinish.AddListener(FinishCityBlock);
+        
+        buildingPrefab = Resources.Load<GameObject>("Prefabs/Building");
     }
 
     public override void EnterState()
@@ -43,8 +51,15 @@ public class CityBlockGenerator : FSM_State
     {
         findCentroidOfBlock();
         calculateInnerCorners();
-        createMesh();
-        calculateSpawnpoints();
+
+        CityBlock currentBlock = cityBlocksData[currentSelectedIndex];
+        for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
+        {
+            GameObject testBuilding = Instantiate(buildingPrefab, currentBlock.spawnPoints[i].position,
+                Quaternion.identity);
+
+            testBuilding.transform.localScale = buildingSize;
+        }
     }
 
     public void CreateEmptyCityBlock()
@@ -69,6 +84,15 @@ public class CityBlockGenerator : FSM_State
             cityBlocksData[currentSelectedIndex].outerCorners.Add(pNode.position);
     }
 
+    private void addSpawnpointToCityBlock(Spawnpoint pSpawnpoint, Vector3 pMousePos)
+    {
+        if (!isActive) return;
+        if (pSpawnpoint == null) return;
+        
+        if (!cityBlocksData[currentSelectedIndex].spawnPoints.Contains(pSpawnpoint))
+            cityBlocksData[currentSelectedIndex].spawnPoints.Add(pSpawnpoint);
+    }
+
     private void findCentroidOfBlock()
     {
         List<Vector3> outerCorners = cityBlocksData[currentSelectedIndex].outerCorners;
@@ -76,66 +100,6 @@ public class CityBlockGenerator : FSM_State
         currentCentroidPoint = GridHelperClass.GetCentroidOfArea(outerCorners);
 
         cityBlocksData[currentSelectedIndex].centroid = currentCentroidPoint;
-    }
-
-    private void createMesh()
-    {
-        GameObject plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
-        plane.transform.position = currentCentroidPoint;
-        
-        MeshFilter meshFilter = plane.GetComponent<MeshFilter>();
-        Mesh originalMesh = meshFilter.sharedMesh;
-
-        Mesh clonedMesh = new Mesh
-        {
-            name = "clone",
-            vertices = originalMesh.vertices,
-            triangles = originalMesh.triangles,
-            normals = originalMesh.normals,
-            uv = originalMesh.uv
-        };
-
-        Vector3[] vertices = clonedMesh.vertices;
-
-        for (int i = 0; i < vertices.Length; i++)
-        {
-            if (vertexIndices.Contains(i))
-            {
-                Vector3 convertedPosition = plane.transform.TransformPoint(vertices[i]);
-                planeOuterVertices.Add(convertedPosition);
-            }
-        }
-
-        List<Vector3> innerCorners = cityBlocksData[currentSelectedIndex].innerCorners;
-
-        for (int i = 0; i < innerCorners.Count; i++)
-        {
-            float currentLowestDistance = 10000f;
-            Vector3 lastBestVertex = Vector3.zero;
-            int lastBestVertexIndex = 0;
-
-            for (int j = 0; j < planeOuterVertices.Count; j++)
-            {
-                float distanceToVertex = Vector3.Distance(planeOuterVertices[j], innerCorners[i]);
-
-                if (distanceToVertex < currentLowestDistance)
-                {
-                    lastBestVertex = planeOuterVertices[j];
-                    currentLowestDistance = distanceToVertex;
-                    lastBestVertexIndex = j;
-                }
-            }
-            
-            if(!planeClosestVertices.ContainsKey(lastBestVertexIndex))planeClosestVertices.Add(lastBestVertexIndex, lastBestVertex);
-        }
-
-        foreach (KeyValuePair<int, Vector3> vertex in planeClosestVertices)
-        {
-            vertices[vertex.Key] = vertex.Value;
-        }
-
-        clonedMesh.vertices = vertices;
-        meshFilter.mesh = clonedMesh;
     }
 
     private void calculateInnerCorners()
@@ -157,19 +121,6 @@ public class CityBlockGenerator : FSM_State
             cityBlocksData[currentSelectedIndex].innerCorners.Add(innerCorner);
         }
     }
-
-    private void calculateSpawnpoints()
-    {
-        int gridWidth = 0;
-        int gridHeight = 0;
-
-        int spawnpointCountX = 0;
-        int spawnpointCountY = 0;
-
-        //Start from centroid, go left/right until the x-position of the top node hasD been reached. 
-        //
-    }
-
 
     private void OnDrawGizmos()
     {
@@ -193,7 +144,7 @@ public class CityBlockGenerator : FSM_State
             if (centroid != Vector3.zero) Gizmos.DrawWireSphere(centroid, 2f);
             Gizmos.color = Color.cyan;
             if (spawnAreaMesh != null) Gizmos.DrawMesh(spawnAreaMesh, centroid, Quaternion.identity);
-            
+
             List<Vector3> innerCorners = cityBlocksData[i].innerCorners;
             for (int j = 0; j < innerCorners.Count; j++)
             {

@@ -9,12 +9,12 @@ using UnityEngine.Events;
 public class ManageNodesEditor : Editor
 {
     private NodeEditor editorTarget;
-    private NodeEditModes newEditMode;
+    private Node_EditModes newEditMode;
 
     private void OnEnable()
     {
         editorTarget = (NodeEditor) target;
-        editorTarget.CurrentMode = NodeEditModes.NoneSelected;
+        editorTarget.CurrentMode = Node_EditModes.NoneSelected;
     }
 
     public override void OnInspectorGUI()
@@ -33,20 +33,20 @@ public class ManageNodesEditor : Editor
         
         GUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("Place", style, GUILayout.Height(40))) newEditMode = NodeEditModes.PlaceNode;
+        if (GUILayout.Button("Place", style, GUILayout.Height(40))) newEditMode = Node_EditModes.PlaceNode;
 
         GUI.backgroundColor = Color.red;
         if (GUILayout.Button("Remove", style, GUILayout.Height(40)))
-            newEditMode = NodeEditModes.RemoveNode;
+            newEditMode = Node_EditModes.RemoveNode;
 
         GUI.backgroundColor = Color.yellow;
-        if (GUILayout.Button("Move", style, GUILayout.Height(40))) newEditMode = NodeEditModes.MoveNode;
+        if (GUILayout.Button("Move", style, GUILayout.Height(40))) newEditMode = Node_EditModes.MoveNode;
 
         GUI.backgroundColor = Color.magenta;
-        if (GUILayout.Button("Connect", style,GUILayout.Height(40))) newEditMode = NodeEditModes.ConnectNode;
+        if (GUILayout.Button("Connect", style,GUILayout.Height(40))) newEditMode = Node_EditModes.ConnectNode;
 
         GUI.backgroundColor = Color.cyan;
-        if (GUILayout.Button("Disconnect", style, GUILayout.Height(40))) newEditMode = NodeEditModes.DisconnectNode;
+        if (GUILayout.Button("Disconnect", style, GUILayout.Height(40))) newEditMode = Node_EditModes.DisconnectNode;
         
         GUILayout.EndHorizontal();
         

@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
-public class Node : MonoBehaviour
+public class Node : ClickablePoint
 {
-    public Vector3 position;
     public GameObject InterSection;
     public List<Node> connectedNodes = new List<Node>();
     public List<Node> alreadyConnectedNodes = new List<Node>();

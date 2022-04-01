@@ -42,27 +42,27 @@ public class UIManager : MonoBehaviour
         if (cityBlockEditMode) PrepareCityBlockGUI();
     }
 
-    private void listenToNewMode(NodeEditModes pNewMode)
+    private void listenToNewMode(Node_EditModes pNewMode)
     {
         switch (pNewMode)
         {
-            case NodeEditModes.PlaceNode:
+            case Node_EditModes.PlaceNode:
                 currentMode = "Place";
                 modeInstructions = "Click somewhere to place a node.";
                 break;
-            case NodeEditModes.RemoveNode:
+            case Node_EditModes.RemoveNode:
                 currentMode = "Remove";
                 modeInstructions = "Click node to delete.";
                 break;
-            case NodeEditModes.MoveNode:
+            case Node_EditModes.MoveNode:
                 currentMode = "Move";
                 modeInstructions = "Click a node to select it. \nUse mouse to move node. \nClick again to release.";
                 break;
-            case NodeEditModes.ConnectNode:
+            case Node_EditModes.ConnectNode:
                 currentMode = "Connect";
                 modeInstructions = "Click 2 different nodes to connect them";
                 break;
-            case NodeEditModes.DisconnectNode:
+            case Node_EditModes.DisconnectNode:
                 currentMode = "Disconnect";
                 modeInstructions = "Click one of the connected \nnodes to disconnect";
                 break; 

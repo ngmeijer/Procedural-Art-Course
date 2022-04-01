@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
-public enum NodeEditModes
+public enum Node_EditModes
 {
     PlaceNode,
     RemoveNode,
@@ -24,11 +24,14 @@ public enum FSM_States
 
 public class GeneratorFSM : MonoBehaviour
 {
-    public static UnityEvent<NodeEditModes> broadcastNodeEditModeChange = new UnityEvent<NodeEditModes>();
+    public static UnityEvent<Node_EditModes> broadcastNodeEditModeChange = new UnityEvent<Node_EditModes>();
+    public static UnityEvent<FSM_States> broadcastGenerationModeChange = new UnityEvent<FSM_States>();
+
     private NodeEditor nodeEditor;
     private RoadGenerator roadGenerator;
     private CityBlockGenerator cityBlockGenerator;
-    private FSM_State currentState;
+    private FSM_State currentGenerator;
+    private FSM_States currentState;
 
     private void OnEnable()
     {
@@ -41,33 +44,40 @@ public class GeneratorFSM : MonoBehaviour
         nodeEditor.onModeExit.AddListener(listenToNewGenerationMode);
         roadGenerator.onModeExit.AddListener(listenToNewGenerationMode);
         cityBlockGenerator.onModeExit.AddListener(listenToNewGenerationMode);
-        currentState = nodeEditor;
+        currentGenerator = nodeEditor;
 
-        currentState.EnterState();
+        currentGenerator.EnterState();
+
+        currentState = FSM_States.GenerateNodes;
+        broadcastGenerationModeChange.Invoke(currentState);
     }
 
-    private void listenToNewNodeEditMode(NodeEditModes pNewMode)
+    private void listenToNewNodeEditMode(Node_EditModes pNewMode)
     {
         broadcastNodeEditModeChange.Invoke(pNewMode);
     }
 
     private void listenToNewGenerationMode(FSM_States pOldState)
     {
-        currentState.ExitState();
+        currentGenerator.ExitState();
         
         switch (pOldState)
         {
-            case FSM_States.GenerateNodes:  
+            case FSM_States.GenerateNodes:
                 nodeEditor.transferNodes();
-                currentState = roadGenerator;
+                currentGenerator = roadGenerator;
+                currentState = FSM_States.GenerateRoads;
                 break;
             case FSM_States.GenerateRoads:
-                currentState = cityBlockGenerator;
+                currentGenerator = cityBlockGenerator;
+                currentState = FSM_States.GenerateCityBlocks;
                 break;
             case FSM_States.GenerateCityBlocks:
                 break;
         }
 
-        currentState.EnterState();
+        currentGenerator.EnterState();
+        
+        broadcastGenerationModeChange.Invoke(currentState);
     }
 }
