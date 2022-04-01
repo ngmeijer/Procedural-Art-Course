@@ -172,6 +172,7 @@ MonoBehaviour:
       m_Calls: []
   cityBlocksData: []
   innerOffset: 10
+  planeOuterVertices: []
 --- !u!1 &289121772
 GameObject:
   m_ObjectHideFlags: 0
@@ -309,6 +310,7 @@ MonoBehaviour:
       m_Calls: []
   buildingSize: {x: 5, y: 5, z: 5}
   buildingOffset: {x: 2, y: 2, z: 2}
+  HasCalculatedSpawnpoints: 0
 --- !u!4 &534393406
 Transform:
   m_ObjectHideFlags: 0
