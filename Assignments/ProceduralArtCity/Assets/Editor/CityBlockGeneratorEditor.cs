@@ -14,9 +14,24 @@ public class CityBlockGeneratorEditor : Editor
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
+        
+        GUIStyle style = new GUIStyle(GUI.skin.button)
+        {
+            fontSize = 15
+        };
+        
+        GUILayout.Space(20);
+        GUILayout.BeginHorizontal();
 
-        if (GUILayout.Button("Create new city block")) editorTarget.CreateEmptyCityBlock();
-        if (GUILayout.Button("Finish current city block")) editorTarget.FinishCityBlock();
-        if (GUILayout.Button("Discard current city block")) editorTarget.DiscardCurrentCityBlock();
+        GUI.backgroundColor = Color.grey;
+        if (GUILayout.Button("Create new \ncity block", style, GUILayout.Height(50))) editorTarget.CreateEmptyCityBlock();
+        
+        GUI.backgroundColor = Color.green;
+        if (GUILayout.Button("Finish current \ncity block", style, GUILayout.Height(50))) editorTarget.FinishCityBlock();
+        
+        GUI.backgroundColor = Color.red;
+        if (GUILayout.Button("Discard current \ncity block", style, GUILayout.Height(50))) editorTarget.DiscardCurrentCityBlock();
+        
+        GUILayout.EndHorizontal();
     }
 }

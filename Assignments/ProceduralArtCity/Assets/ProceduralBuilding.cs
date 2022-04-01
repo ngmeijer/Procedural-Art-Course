@@ -62,4 +62,6 @@ public class ProceduralBuilding : MonoBehaviour
         GameObject stack = Instantiate(roofStacks[randomIndex],
             bottomPosition + new Vector3(0, stackHeight * currentAmountOfStacks, 0), Quaternion.identity);
     }
+    
+    
 }

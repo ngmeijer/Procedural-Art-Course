@@ -15,9 +15,12 @@ public class RoadGeneratorEditor : Editor
     {
         DrawDefaultInspector();
 
-        if (GUILayout.Button("Create roads"))
+        GUIStyle style = new GUIStyle(GUI.skin.button)
         {
-            editorTarget.InitializeRoads();
+            fontSize = 15
         };
+
+        GUI.backgroundColor = Color.green;
+        if (GUILayout.Button("Create roads", style, GUILayout.Height(50))) editorTarget.InitializeRoads();
     }
 }

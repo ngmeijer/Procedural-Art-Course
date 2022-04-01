@@ -28,6 +28,12 @@ public class Event_OnResetSelection : UnityEvent
 
 public class NodeEditor : FSM_State
 {
+    public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
+    public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
+    public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
+    public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
+    [HideInInspector] public UnityEvent<Node_EditModes> onSelectNewMode = new UnityEvent<Node_EditModes>();
+    
     private Camera cam;
     private Vector3 currentPoint;
     private GameObject nodePrefab;
@@ -39,30 +45,27 @@ public class NodeEditor : FSM_State
     private Node firstNode;
     private Node secondNode;
     private Vector3 mousePositionOnGround;
-    public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
-    public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
-    public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
-    public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
-    [HideInInspector] public UnityEvent<Node_EditModes> onSelectNewMode = new UnityEvent<Node_EditModes>();
 
     private bool currentlyMovingNode;
 
-    private List<Vector3> outerCorners = new List<Vector3>();
-    private List<Vector3> nodePositions = new List<Vector3>();
     private Vector3 cityCentroid;
     private float mostLeft;
     private float mostRight;
     private float mostTop;
     private float mostBottom;
+    
+    private List<Vector3> outerCorners = new List<Vector3>();
+    private List<Vector3> nodePositions = new List<Vector3>();
     private List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
-    [SerializeField] private Vector3 buildingSize;
-    [SerializeField] private Vector3 buildingOffset;
-    public bool HasCalculatedSpawnpoints;
+    private Vector3 buildingSize;
+    private Vector3 buildingOffset;
+    [HideInInspector] public bool HasCalculatedSpawnpoints;
 
-    private void Start()
+    private void Awake()
     {
         PointSelector.onNodeSelect.AddListener(determineAction);
+        CityBlockGenerator.onBuildingSettingsChanged.AddListener(updateBuildingSettings);
 
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
         spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
@@ -76,6 +79,12 @@ public class NodeEditor : FSM_State
     public override void ExitState()
     {
         isActive = false;
+    }
+
+    private void updateBuildingSettings(Vector3 pSize, Vector3 pOffset)
+    {
+        buildingSize = pSize;
+        buildingOffset = pOffset;
     }
 
     public void RecalculateSpawnpoints()

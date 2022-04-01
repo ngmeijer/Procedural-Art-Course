@@ -20,9 +20,7 @@ public class ManageNodesEditor : Editor
     public override void OnInspectorGUI()
     {
         DrawDefaultInspector();
-
-        float inspectorWidth = EditorGUIUtility.currentViewWidth;
-
+        
         EditorGUILayout.Space(20);
         EditorGUILayout.LabelField("Node editing modes");
 

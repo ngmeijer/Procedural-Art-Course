@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,36 +6,34 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
+[Serializable]
+public class Event_OnBuildingSettingsChanged : UnityEvent<Vector3, Vector3>
+{
+}
+
 public class CityBlockGenerator : FSM_State
 {
+    public static Event_OnBuildingSettingsChanged onBuildingSettingsChanged = new Event_OnBuildingSettingsChanged();
     [SerializeField] private List<CityBlock> cityBlocksData = new List<CityBlock>();
     private int currentSelectedIndex = -1;
     private Vector3 currentCentroidPoint;
-    private bool generatorActive;
-    private Vector3 mousePositionOnGround;
+    
     [SerializeField] private float innerOffset = 3f;
-
-    [SerializeField] private List<Vector3> planeOuterVertices = new List<Vector3>();
     [SerializeField] private Vector3 buildingSize = new Vector3(5,5,5);
     [SerializeField] private Vector3 buildingOffset = new Vector3(2, 2, 2);
-
-    [SerializeField] private GameObject buildingPrefab;
     
-    private int[] vertexIndices = new int[]
-    {
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 21, 32, 43, 54, 65, 76, 87, 98, 109, 120,
-        11, 22, 33, 44, 55, 66, 77, 88, 99, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119
-    };
-
     private Dictionary<int, Vector3> planeClosestVertices = new Dictionary<int, Vector3>();
 
-    private void Start()
+    private void Awake()
     {
         PointSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
         PointSelector.onSpawnpointSelect.AddListener(addSpawnpointToCityBlock);
         UIManager.onCityBlockFinish.AddListener(FinishCityBlock);
-        
-        buildingPrefab = Resources.Load<GameObject>("Prefabs/Building");
+    }
+
+    private void Start()
+    {
+        onBuildingSettingsChanged.Invoke(buildingSize, buildingOffset);
     }
 
     public override void EnterState()
@@ -47,19 +46,15 @@ public class CityBlockGenerator : FSM_State
         isActive = false;
     }
 
+    private void Update()
+    {
+        if (!isActive) return;
+    }
+
     public void FinishCityBlock()
     {
         findCentroidOfBlock();
         calculateInnerCorners();
-
-        CityBlock currentBlock = cityBlocksData[currentSelectedIndex];
-        for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
-        {
-            GameObject testBuilding = Instantiate(buildingPrefab, currentBlock.spawnPoints[i].position,
-                Quaternion.identity);
-
-            testBuilding.transform.localScale = buildingSize;
-        }
     }
 
     public void CreateEmptyCityBlock()
@@ -120,6 +115,11 @@ public class CityBlockGenerator : FSM_State
             Vector3 innerCorner = directionVector + centroid;
             cityBlocksData[currentSelectedIndex].innerCorners.Add(innerCorner);
         }
+    }
+
+    private void OnValidate()
+    {
+        onBuildingSettingsChanged.Invoke(buildingSize, buildingOffset);
     }
 
     private void OnDrawGizmos()
