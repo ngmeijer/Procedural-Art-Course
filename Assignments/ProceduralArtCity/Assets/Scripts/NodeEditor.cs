@@ -32,13 +32,14 @@ public class NodeEditor : FSM_State
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
     public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
     public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
-    [HideInInspector] public UnityEvent<Node_EditModes> onSelectNewMode = new UnityEvent<Node_EditModes>();
+    public static UnityEvent<Node_EditModes> onSelectNewMode = new UnityEvent<Node_EditModes>();
+    public static UnityEvent onRecalculateSpawnpoints = new UnityEvent();
     
     private Camera cam;
     private Vector3 currentPoint;
     private GameObject nodePrefab;
     private GameObject spawnpointPrefab;
-    public Node_EditModes CurrentMode;
+    public static Node_EditModes CurrentMode;
 
     [SerializeField] private Transform spawnpointParent;
     [SerializeField] private Transform nodeParent;
@@ -62,7 +63,7 @@ public class NodeEditor : FSM_State
 
     private Vector3 buildingSize;
     private Vector3 buildingOffset;
-    [HideInInspector] public bool HasCalculatedSpawnpoints;
+    public static bool HasCalculatedSpawnpoints;
 
     public static Vector3 Centroid;
 
@@ -70,7 +71,10 @@ public class NodeEditor : FSM_State
     {
         PointSelector.onNodeSelect.AddListener(determineAction);
         CityBlockGenerator.onBuildingSettingsChanged.AddListener(updateBuildingSettings);
-
+        GeneratorFSM.broadcastNodeEditModeChange.AddListener(updateEditMode);
+        
+        onRecalculateSpawnpoints.AddListener(RecalculateSpawnpoints);
+        
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
         spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
     }
@@ -93,6 +97,7 @@ public class NodeEditor : FSM_State
 
     public void RecalculateSpawnpoints()
     {
+        Debug.Log("recalculating spawnpoints");
         clearOldData();
         destroyUnconnectedNodes();
         calculateOuterCorners();
@@ -100,6 +105,11 @@ public class NodeEditor : FSM_State
         createSpawnpoints();
 
         HasCalculatedSpawnpoints = true;
+    }
+
+    private void updateEditMode(Node_EditModes pNewMode)
+    {
+        CurrentMode = pNewMode;
     }
 
     private void Update()
@@ -299,10 +309,6 @@ public class NodeEditor : FSM_State
 
         int countX = (gridWidth / xDivision) + 1;
         int countZ = (gridDepth / zDivision) + 1;
-        
-        Debug.Log($"gridWidth: {gridWidth}, gridDepth: {gridDepth}");
-        Debug.Log($"xDivision: {xDivision}, zDivision: {zDivision}");
-        Debug.Log($"CountX: {countX}, CountZ: {countZ}");
 
         Vector3 startPosition = outerCorners[0];
 

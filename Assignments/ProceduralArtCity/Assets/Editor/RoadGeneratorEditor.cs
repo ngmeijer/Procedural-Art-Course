@@ -20,6 +20,7 @@ public class RoadGeneratorEditor : Editor
             fontSize = 15
         };
 
+        GUILayout.Space(20);
         GUI.backgroundColor = Color.green;
         if (GUILayout.Button("Create roads", style, GUILayout.Height(50))) editorTarget.InitializeRoads();
     }

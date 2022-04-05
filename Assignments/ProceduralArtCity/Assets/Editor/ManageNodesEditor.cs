@@ -14,7 +14,7 @@ public class ManageNodesEditor : Editor
     private void OnEnable()
     {
         editorTarget = (NodeEditor) target;
-        editorTarget.CurrentMode = Node_EditModes.NoneSelected;
+        //editorTarget.CurrentMode = Node_EditModes.NoneSelected;
     }
 
     public override void OnInspectorGUI()
@@ -53,16 +53,16 @@ public class ManageNodesEditor : Editor
         if (GUILayout.Button("Recalculate spawnpoints", style)) editorTarget.RecalculateSpawnpoints();
         
         GUI.backgroundColor = Color.grey;
-        if (GUILayout.Button("Confirm map", style))
-        {
-            if (!editorTarget.HasCalculatedSpawnpoints) return;
-            editorTarget.onModeExit.Invoke(FSM_States.GenerateNodes);
-        }
-
-        if (newEditMode != editorTarget.CurrentMode)
-        {
-            editorTarget.onSelectNewMode.Invoke(newEditMode);
-            editorTarget.CurrentMode = newEditMode;
-        }
+        // if (GUILayout.Button("Confirm map", style))
+        // {
+        //     if (!editorTarget.HasCalculatedSpawnpoints) return;
+        //     editorTarget.onModeExit.Invoke(FSM_States.GenerateNodes);
+        // }
+        //
+        // if (newEditMode != editorTarget.CurrentMode)
+        // {
+        //     editorTarget.onSelectNewMode.Invoke(newEditMode);
+        //     editorTarget.CurrentMode = newEditMode;
+        // }
     }
 }

@@ -20,8 +20,8 @@ public class CityBlockGeneratorEditor : Editor
             fontSize = 15
         };
         
-        GUILayout.Space(20);
         GUILayout.BeginHorizontal();
+        GUILayout.Space(50);
 
         GUI.backgroundColor = Color.grey;
         if (GUILayout.Button("Create new \ncity block", style, GUILayout.Height(50))) editorTarget.CreateEmptyCityBlock();

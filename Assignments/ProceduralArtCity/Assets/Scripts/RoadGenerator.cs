@@ -39,7 +39,7 @@ public class RoadGenerator : FSM_State
         if (!isActive) return;
 
         CreateIntersections();
-        CreateRoads();
+        createRoads();
         onModeExit.Invoke(FSM_States.GenerateRoads);
     }
 
@@ -60,7 +60,7 @@ public class RoadGenerator : FSM_State
         }
     }
 
-    public void CreateRoads()
+    private void createRoads()
     {
         for (int i = 0; i < allNodes.Count; i++)
         {

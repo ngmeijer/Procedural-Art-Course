@@ -5,7 +5,7 @@ public abstract class FSM_State : MonoBehaviour
 {
     public bool isActive;
 
-    [HideInInspector]public UnityEvent<FSM_States> onModeExit;
+    public UnityEvent<FSM_States> onModeExit;
     
     public abstract void EnterState();
     public abstract void ExitState();

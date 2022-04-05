@@ -14,6 +14,13 @@ public enum Node_EditModes
     NoneSelected,
 }
 
+public enum CityBlockActions
+{
+    Create,
+    Finish,
+    Discard
+}
+
 public enum FSM_States
 {
     GenerateNodes,
@@ -39,11 +46,7 @@ public class GeneratorFSM : MonoBehaviour
         roadGenerator = FindObjectOfType<RoadGenerator>();
         cityBlockGenerator = FindObjectOfType<CityBlockGenerator>();
 
-        nodeEditor.onSelectNewMode.AddListener(listenToNewNodeEditMode);
-
-        nodeEditor.onModeExit.AddListener(listenToNewGenerationMode);
-        roadGenerator.onModeExit.AddListener(listenToNewGenerationMode);
-        cityBlockGenerator.onModeExit.AddListener(listenToNewGenerationMode);
+        
         currentGenerator = nodeEditor;
 
         currentGenerator.EnterState();
@@ -52,12 +55,38 @@ public class GeneratorFSM : MonoBehaviour
         broadcastGenerationModeChange.Invoke(currentState);
     }
 
-    private void listenToNewNodeEditMode(Node_EditModes pNewMode)
+    public void ProcessNewNodeEditModeRequest(Node_EditModes pNewMode)
     {
         broadcastNodeEditModeChange.Invoke(pNewMode);
     }
 
-    private void listenToNewGenerationMode(FSM_States pOldState)
+    public void ProcessSpawnpointRegenerationRequest()
+    {
+        nodeEditor.RecalculateSpawnpoints();
+    }
+
+    public void ProcessRoadGenerationRequest()
+    {
+        roadGenerator.InitializeRoads();
+    }
+
+    public void ProcessCityBlockActionRequest(CityBlockActions pAction)
+    {
+        switch (pAction)
+        {
+            case CityBlockActions.Create:
+                cityBlockGenerator.CreateEmptyCityBlock();
+                break;
+            case CityBlockActions.Finish:
+                cityBlockGenerator.FinishCityBlock();
+                break;
+            case CityBlockActions.Discard:
+                cityBlockGenerator.DiscardCurrentCityBlock();
+                break;
+        }
+    }
+
+    public void ProcessNewGenerationModeRequest(FSM_States pOldState)
     {
         currentGenerator.ExitState();
         
