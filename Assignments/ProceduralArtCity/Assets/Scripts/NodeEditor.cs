@@ -281,13 +281,17 @@ public class NodeEditor : FSM_State
     private void createSpawnpoints()
     {
         int gridWidth = Mathf.CeilToInt(outerCorners[1].x - outerCorners[0].x);
-        int gridHeight = Mathf.CeilToInt(outerCorners[1].z - outerCorners[2].z);
+        int gridDepth = Mathf.CeilToInt(outerCorners[1].z - outerCorners[2].z);
 
         int xDivision = Mathf.CeilToInt(buildingSize.x + buildingOffset.x);
         int zDivision = Mathf.CeilToInt(buildingSize.z + buildingOffset.z);
 
-        int countX = gridWidth / xDivision;
-        int countZ = gridHeight / zDivision;
+        int countX = (gridWidth / xDivision) + 1;
+        int countZ = (gridDepth / zDivision) + 1;
+        
+        Debug.Log($"gridWidth: {gridWidth}, gridDepth: {gridDepth}");
+        Debug.Log($"xDivision: {xDivision}, zDivision: {zDivision}");
+        Debug.Log($"CountX: {countX}, CountZ: {countZ}");
 
         Vector3 startPosition = outerCorners[0];
 

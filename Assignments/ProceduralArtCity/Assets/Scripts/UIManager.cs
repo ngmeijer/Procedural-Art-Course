@@ -14,8 +14,8 @@ public class Event_OnClickNewMode : UnityEvent<string>
 public class UIManager : MonoBehaviour
 {
     private GUIStyle labelStyle = new GUIStyle();
-    public string currentMode = "none selected";
-    private string modeInstructions;
+    public string currentNodeEditMode = "none selected";
+    private string nodeInstructions;
 
     public static UnityEvent onClickCreateSaveFile = new UnityEvent();
     public static UnityEvent onClickSaveToFile = new UnityEvent();
@@ -23,65 +23,80 @@ public class UIManager : MonoBehaviour
     public static UnityEvent onClickGenerateRoads = new UnityEvent();
     public static Event_OnCityBlockAction onCityBlockInitialize = new Event_OnCityBlockAction();
     public static Event_OnCityBlockAction onCityBlockFinish = new Event_OnCityBlockAction();
-
-    public bool nodeEditMode;
-    public bool streetGenerationMode;
-    public bool cityBlockEditMode;
+    private FSM_States currentState;
+    private string currentGenerationMode;
 
     private void OnEnable()
     {
-        nodeEditMode = true;
         labelStyle.fontSize = 30;
         
-        GeneratorFSM.broadcastNodeEditModeChange.AddListener(listenToNewMode);
+        GeneratorFSM.broadcastNodeEditModeChange.AddListener(listenToNewNodeMode);
+        GeneratorFSM.broadcastGenerationModeChange.AddListener(listenToNewGenerationMode);
     }
 
     private void OnGUI()
     {
         PrepareGameGUI();
-        if (cityBlockEditMode) PrepareCityBlockGUI();
+        PrepareCityBlockGUI();
     }
 
-    private void listenToNewMode(Node_EditModes pNewMode)
+    private void listenToNewGenerationMode(FSM_States pNewState)
+    {
+        switch (pNewState)
+        {
+            case FSM_States.GenerateNodes:
+                break;
+            case FSM_States.GenerateRoads:
+                break;
+            case FSM_States.GenerateCityBlocks:
+                break;
+        }
+
+        currentGenerationMode = pNewState.ToString();
+    }
+
+    private void listenToNewNodeMode(Node_EditModes pNewMode)
     {
         switch (pNewMode)
         {
             case Node_EditModes.PlaceNode:
-                currentMode = "Place";
-                modeInstructions = "Click somewhere to place a node.";
+                nodeInstructions = "Click somewhere to place a node.";
                 break;
             case Node_EditModes.RemoveNode:
-                currentMode = "Remove";
-                modeInstructions = "Click node to delete.";
+                nodeInstructions = "Click node to delete.";
                 break;
             case Node_EditModes.MoveNode:
-                currentMode = "Move";
-                modeInstructions = "Click a node to select it. \nUse mouse to move node. \nClick again to release.";
+                nodeInstructions = "Click a node to select it. \nUse mouse to move node. \nClick again to release.";
                 break;
             case Node_EditModes.ConnectNode:
-                currentMode = "Connect";
-                modeInstructions = "Click 2 different nodes to connect them";
+                nodeInstructions = "Click 2 different nodes to connect them";
                 break;
             case Node_EditModes.DisconnectNode:
-                currentMode = "Disconnect";
-                modeInstructions = "Click one of the connected \nnodes to disconnect";
+                nodeInstructions = "Click one of the connected \nnodes to disconnect";
                 break; 
         }
+
+        currentNodeEditMode = pNewMode.ToString();
     }
 
     private void PrepareCityBlockGUI()
     {
-        if (GUI.Button(new Rect(10, 10, 150, 50), "Confirm city block"))
-        {
-            onCityBlockFinish.Invoke();
-        }
+        
     }
 
     private void PrepareGameGUI()
     {
-        GUI.Label(new Rect(10, 10, 100, 50), "Mode:", labelStyle);
-        GUI.Label(new Rect(100, 10, 100, 50), currentMode, labelStyle);
-        GUI.Label(new Rect(10, 70, 100, 50), modeInstructions, labelStyle);
-        GUI.Label(new Rect(10, 130, 100, 50), "Press TAB to \nlock/unlock \ncamera movement", labelStyle);
+        labelStyle.normal.textColor = Color.white;
+        labelStyle.fontSize = 30;
+        GUI.Label(new Rect(10, 10, 100, 50), "Generation mode:", labelStyle);
+        GUI.Label(new Rect(265, 10, 100, 50), currentGenerationMode, labelStyle);
+        
+        GUI.Label(new Rect(10, 70, 100, 50), "Node edit mode:", labelStyle);
+        GUI.Label(new Rect(265, 70, 100, 50), currentNodeEditMode, labelStyle);
+
+        labelStyle.normal.textColor = Color.black;
+        labelStyle.fontSize = 25;
+        GUI.Label(new Rect(10, 130, 100, 50), nodeInstructions, labelStyle);
+        GUI.Label(new Rect(10, 180, 100, 50), "Press TAB to \nlock/unlock \ncamera movement", labelStyle);
     }
 }

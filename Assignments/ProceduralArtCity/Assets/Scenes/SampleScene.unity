@@ -172,8 +172,7 @@ MonoBehaviour:
       m_Calls: []
   cityBlocksData: []
   innerOffset: 10
-  planeOuterVertices: []
-  buildingSize: {x: 13.88, y: 26.7, z: 5}
+  buildingSize: {x: 5, y: 5, z: 5}
   buildingOffset: {x: 2, y: 2, z: 2}
 --- !u!1 &289121772
 GameObject:
@@ -305,11 +304,11 @@ MonoBehaviour:
   onModeExit:
     m_PersistentCalls:
       m_Calls: []
-  CurrentMode: 0
-  allNodes: []
   onSelectNewMode:
     m_PersistentCalls:
       m_Calls: []
+  CurrentMode: 0
+  allNodes: []
   HasCalculatedSpawnpoints: 0
 --- !u!4 &534393406
 Transform:
@@ -684,4 +683,3 @@ MonoBehaviour:
       m_Calls: []
   IntersectionPrefab: {fileID: 5656212002587116251, guid: 577bcc8f2eb8cd64c8f4c6b58645e184, type: 3}
   roadMaterial: {fileID: 2100000, guid: d33e621ca40544c45a2ab5e5097b7483, type: 2}
-  allNodes: []

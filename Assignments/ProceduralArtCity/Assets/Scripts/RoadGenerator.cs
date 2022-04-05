@@ -7,18 +7,18 @@ using UnityEngine;
 
 public class RoadGenerator : FSM_State
 {
-    public GameObject IntersectionPrefab;
-    public Material roadMaterial;
-    
-    public List<Node> allNodes;
-    
-    Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
+    [SerializeField] private GameObject IntersectionPrefab;
+    [SerializeField] private Material roadMaterial;
+
+    private List<Node> allNodes;
+
+    private Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
 
     private void Start()
     {
         NodeEditor.eventTransferToRoadGenerator.AddListener(ReceiveNodeData);
     }
-    
+
     public override void EnterState()
     {
         isActive = true;
@@ -37,7 +37,7 @@ public class RoadGenerator : FSM_State
     public void InitializeRoads()
     {
         if (!isActive) return;
-        
+
         CreateIntersections();
         CreateRoads();
         onModeExit.Invoke(FSM_States.GenerateRoads);
@@ -76,7 +76,7 @@ public class RoadGenerator : FSM_State
     private void createPlaneMesh(Node pMainNode, Node pConnectedNode)
     {
         if (pConnectedNode.alreadyConnectedNodes.Contains(pMainNode)) return;
-        
+
         coordinates.Clear();
 
         string otherNodeDirection = "";
@@ -148,12 +148,12 @@ public class RoadGenerator : FSM_State
 
         coordinates.Add("Node 1, vertex 1", node1Vertex1);
         coordinates.Add("Node 1, vertex 2", node1Vertex2);
-        
+
         GameObject go = new GameObject("Road mesh for: " + pMainNode.name);
         MeshFilter meshFilter = go.AddComponent(typeof(MeshFilter)) as MeshFilter;
         MeshRenderer meshRenderer = go.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
         meshRenderer.material = roadMaterial;
-        
+
         Mesh mesh = new Mesh
         {
             vertices = coordinates.Values.ToArray(),
@@ -166,32 +166,9 @@ public class RoadGenerator : FSM_State
         mesh.name = "RoadMesh";
         mesh.RecalculateBounds();
         mesh.RecalculateNormals();
-        
+
         go.transform.SetParent(pMainNode.transform.GetChild(0));
         pConnectedNode.alreadyConnectedNodes.Add(pMainNode);
         pMainNode.alreadyConnectedNodes.Add(pConnectedNode);
-    }
-
-    private void OnDrawGizmos()
-    {
-        for (int i = 0; i < allNodes.Count; i++)
-        {
-            Node currentNode = allNodes[i];
-
-            Vector3 labelPosition = new Vector3(currentNode.position.x, currentNode.position.y + 0.5f,
-                currentNode.position.z);
-            if (currentNode.connectedNodes.Count != 0)
-                Handles.Label(labelPosition,
-                    $"Node ID: {currentNode.name}\nDistance to {currentNode.connectedNodes[0]}: " +
-                    currentNode.distanceToNextNode);
-        }
-
-        GUIStyle style = new GUIStyle();
-        style.normal.textColor = Color.white;
-
-        foreach (KeyValuePair<string, Vector3> vertexPos in coordinates)
-        {
-            Handles.Label(vertexPos.Value, $"Vertex {vertexPos.Value}, ID: {vertexPos.Key}", style);
-        }
-    }
+    } 
 }
