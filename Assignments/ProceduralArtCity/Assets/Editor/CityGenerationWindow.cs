@@ -30,17 +30,23 @@ public class CityGenerationWindow : EditorWindow
 
         buttonStyle = new GUIStyle(GUI.skin.button)
         {
-            fontSize = 15
+            fontSize = 15,
         };
     }
 
     private void OnGUI()
     {
         createGUIStyles();
-        
+
+        handleGeneralGUI();
         handleNodeGUI();
         handleRoadGUI();
         handleCityBlockGUI();
+    }
+
+    private void handleGeneralGUI()
+    {
+        
     }
 
     private void handleNodeGUI()
@@ -48,6 +54,7 @@ public class CityGenerationWindow : EditorWindow
         GUILayout.Label("Node Generation", headerStyle, GUILayout.Height(40));
         GUILayout.Space(15);
         GUILayout.BeginHorizontal();
+        GUI.backgroundColor = Color.green;
         if (GUILayout.Button("Place", buttonStyle, GUILayout.Height(40))) newEditMode = Node_EditModes.PlaceNode;
 
         GUI.backgroundColor = Color.red;
@@ -58,29 +65,31 @@ public class CityGenerationWindow : EditorWindow
         if (GUILayout.Button("Move", buttonStyle, GUILayout.Height(40))) newEditMode = Node_EditModes.MoveNode;
 
         GUI.backgroundColor = Color.magenta;
-        if (GUILayout.Button("Connect", buttonStyle,GUILayout.Height(40))) newEditMode = Node_EditModes.ConnectNode;
+        if (GUILayout.Button("Connect", buttonStyle, GUILayout.Height(40))) newEditMode = Node_EditModes.ConnectNode;
 
         GUI.backgroundColor = Color.cyan;
-        if (GUILayout.Button("Disconnect", buttonStyle, GUILayout.Height(40))) newEditMode = Node_EditModes.DisconnectNode;
-        GUILayout.EndHorizontal();    
-        
-        
+        if (GUILayout.Button("Disconnect", buttonStyle, GUILayout.Height(40)))
+            newEditMode = Node_EditModes.DisconnectNode;
+        GUILayout.EndHorizontal();
+
+
         GUILayout.Space(20);
         GUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.grey;
-        if (GUILayout.Button("Recalculate spawnpoints", buttonStyle, GUILayout.Height(30))) generator.ProcessSpawnpointRegenerationRequest();
+        if (GUILayout.Button("Recalculate spawnpoints", buttonStyle, GUILayout.Height(30)))
+            generator.ProcessSpawnpointRegenerationRequest();
         if (GUILayout.Button("Confirm map", buttonStyle, GUILayout.Height(30)))
         {
             if (!NodeEditor.HasCalculatedSpawnpoints) return;
             generator.ProcessNewGenerationModeRequest(FSM_States.GenerateNodes);
         }
-        
+
         GUILayout.EndHorizontal();
 
         if (newEditMode != NodeEditor.CurrentMode)
         {
             generator.ProcessNewNodeEditModeRequest(newEditMode);
-        }       
+        }
     }
 
     private void handleRoadGUI()
@@ -88,14 +97,20 @@ public class CityGenerationWindow : EditorWindow
         GUILayout.Space(20);
         GUILayout.Label("Road Generation", headerStyle, GUILayout.Height(40));
         GUI.backgroundColor = Color.green;
-        if (GUILayout.Button("Create roads", buttonStyle, GUILayout.Height(50))) generator.ProcessRoadGenerationRequest();
+        if (GUILayout.Button("Create roads", buttonStyle, GUILayout.Height(50)))
+            generator.ProcessRoadGenerationRequest();
     }
 
     private void handleCityBlockGUI()
     {
         GUILayout.Space(20);
         GUILayout.Label("City Block Generation", headerStyle, GUILayout.Height(40));
-        
+
+        Vector2 test = Vector2.zero;
+        EditorGUILayout.Vector3Field("Building Size", test);
+        EditorGUILayout.Vector3Field("Building Offset", test);
+
+        GUILayout.Space(20);
         GUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.grey;
         if (GUILayout.Button("Create new \ncity block", buttonStyle, GUILayout.Height(50)))
@@ -104,11 +119,11 @@ public class CityGenerationWindow : EditorWindow
         GUI.backgroundColor = Color.green;
         if (GUILayout.Button("Finish current \ncity block", buttonStyle, GUILayout.Height(50)))
             generator.ProcessCityBlockActionRequest(CityBlockActions.Create);
-        
+
         GUI.backgroundColor = Color.red;
         if (GUILayout.Button("Discard current \ncity block", buttonStyle, GUILayout.Height(50)))
             generator.ProcessCityBlockActionRequest(CityBlockActions.Create);
-        
+
         GUILayout.EndHorizontal();
     }
 }

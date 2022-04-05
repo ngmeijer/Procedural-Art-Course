@@ -35,7 +35,7 @@ public class PointSelector : MonoBehaviour
     public static Event_OnSelectSpawnpoint onSpawnpointSelect = new Event_OnSelectSpawnpoint();
     private ClickablePoint currentSelectedPointType;
     private SpawnpointSelection spawnpointSelectionMode;
-    public Color originalSpawnpointColor;
+    private Color originalSpawnpointColor;
 
     void Start()
     {
