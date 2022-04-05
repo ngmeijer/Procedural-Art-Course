@@ -23,12 +23,16 @@ public class CityBlockGenerator : FSM_State
     [SerializeField] private Vector3 buildingOffset = new Vector3(2, 2, 2);
     
     private Dictionary<int, Vector3> planeClosestVertices = new Dictionary<int, Vector3>();
+    private GameObject buildingContainer;
+    private bool currentlyEditingBlock;
+    private Transform cityBlockParent;
 
     private void Awake()
     {
         PointSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
-        PointSelector.onSpawnpointSelect.AddListener(addSpawnpointToCityBlock);
-        UIManager.onCityBlockFinish.AddListener(FinishCityBlock);
+        PointSelector.onSpawnpointSelect.AddListener(determineSpawnpointAction);
+
+        buildingContainer = Resources.Load<GameObject>("Prefabs/Building");
     }
 
     private void Start()
@@ -55,18 +59,36 @@ public class CityBlockGenerator : FSM_State
     {
         findCentroidOfBlock();
         calculateInnerCorners();
+        
+        CityBlock currentBlock = cityBlocksData[currentSelectedIndex];
+        for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
+        {
+            GameObject building = Instantiate(buildingContainer, currentBlock.spawnPoints[i].position, Quaternion.identity, currentBlock.parent);
+            currentBlock.spawnedBuildings.Add(building);
+        }
+
+        currentlyEditingBlock = false;
     }
 
     public void CreateEmptyCityBlock()
     {
+        if (currentlyEditingBlock) return;
+        
         CityBlock cityBlock = new CityBlock();
         cityBlocksData.Add(cityBlock);
         currentSelectedIndex++;
+        currentlyEditingBlock = true;
+        Transform cityBlockBuildingParent = new GameObject().transform;
+        cityBlockBuildingParent.parent = transform;
+        cityBlockBuildingParent.name = $"[BLOCK {currentSelectedIndex}] building parent";
+        cityBlock.parent = cityBlockBuildingParent;
+        cityBlockParent = cityBlockBuildingParent;
     }
 
     public void DiscardCurrentCityBlock()
     {
-        cityBlocksData.RemoveAt(cityBlocksData.Count - 1);
+        cityBlocksData[currentSelectedIndex] = null;
+        cityBlocksData.RemoveAt(currentSelectedIndex);
         currentSelectedIndex--;
     }
 
@@ -79,13 +101,23 @@ public class CityBlockGenerator : FSM_State
             cityBlocksData[currentSelectedIndex].outerCorners.Add(pNode.position);
     }
 
-    private void addSpawnpointToCityBlock(Spawnpoint pSpawnpoint, Vector3 pMousePos)
+    private void determineSpawnpointAction(Spawnpoint pSpawnpoint, Vector3 pMousePos, SpawnpointSelection pSelectionMode)
     {
         if (!isActive) return;
         if (pSpawnpoint == null) return;
-        
-        if (!cityBlocksData[currentSelectedIndex].spawnPoints.Contains(pSpawnpoint))
-            cityBlocksData[currentSelectedIndex].spawnPoints.Add(pSpawnpoint);
+        if (cityBlocksData.Count == 0) return;
+
+        switch (pSelectionMode)
+        {
+            case SpawnpointSelection.Select:
+                if (!cityBlocksData[currentSelectedIndex].spawnPoints.Contains(pSpawnpoint))
+                    cityBlocksData[currentSelectedIndex].spawnPoints.Add(pSpawnpoint);
+                break;
+            case SpawnpointSelection.Deselect:
+                if (cityBlocksData[currentSelectedIndex].spawnPoints.Contains(pSpawnpoint))
+                    cityBlocksData[currentSelectedIndex].spawnPoints.Remove(pSpawnpoint);
+                break;
+        }
     }
 
     private void findCentroidOfBlock()
@@ -95,6 +127,7 @@ public class CityBlockGenerator : FSM_State
         currentCentroidPoint = GridHelperClass.GetCentroidOfArea(outerCorners);
 
         cityBlocksData[currentSelectedIndex].centroid = currentCentroidPoint;
+        cityBlocksData[currentSelectedIndex].parent.position = currentCentroidPoint;
     }
 
     private void calculateInnerCorners()
@@ -145,23 +178,23 @@ public class CityBlockGenerator : FSM_State
             Gizmos.color = Color.cyan;
             if (spawnAreaMesh != null) Gizmos.DrawMesh(spawnAreaMesh, centroid, Quaternion.identity);
 
-            List<Vector3> innerCorners = cityBlocksData[i].innerCorners;
-            for (int j = 0; j < innerCorners.Count; j++)
-            {
-                Gizmos.color = Color.blue;
-                Gizmos.DrawSphere(innerCorners[j], 1f);
-
-                int previousIndex = j - 1;
-                if (previousIndex < 0) previousIndex = innerCorners.Count - 1;
-
-                int currentIndex = j;
-
-                int nextIndex = j + 1;
-                if (nextIndex > innerCorners.Count - 1) nextIndex = 0;
-
-                Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[nextIndex]);
-                Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[previousIndex]);
-            }
+            // List<Vector3> innerCorners = cityBlocksData[i].innerCorners;
+            // for (int j = 0; j < innerCorners.Count; j++)
+            // {
+            //     Gizmos.color = Color.blue;
+            //     Gizmos.DrawSphere(innerCorners[j], 1f);
+            //
+            //     int previousIndex = j - 1;
+            //     if (previousIndex < 0) previousIndex = innerCorners.Count - 1;
+            //
+            //     int currentIndex = j;
+            //
+            //     int nextIndex = j + 1;
+            //     if (nextIndex > innerCorners.Count - 1) nextIndex = 0;
+            //
+            //     Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[nextIndex]);
+            //     Gizmos.DrawLine(innerCorners[currentIndex], innerCorners[previousIndex]);
+            // }
         }
     }
 }

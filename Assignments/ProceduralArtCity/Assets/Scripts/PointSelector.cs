@@ -10,8 +10,15 @@ public class Event_OnSelectNode : UnityEvent<Node, Vector3>
 }
 
 [Serializable]
-public class Event_OnSelectSpawnpoint : UnityEvent<Spawnpoint, Vector3>
+public class Event_OnSelectSpawnpoint : UnityEvent<Spawnpoint, Vector3, SpawnpointSelection>
 {
+}
+
+[Serializable]
+public enum SpawnpointSelection
+{
+    Select,
+    Deselect
 }
 
 public class PointSelector : MonoBehaviour
@@ -27,6 +34,8 @@ public class PointSelector : MonoBehaviour
     public static Event_OnSelectNode onNodeSelect = new Event_OnSelectNode();
     public static Event_OnSelectSpawnpoint onSpawnpointSelect = new Event_OnSelectSpawnpoint();
     private ClickablePoint currentSelectedPointType;
+    private SpawnpointSelection spawnpointSelectionMode;
+    public Color originalSpawnpointColor;
 
     void Start()
     {
@@ -80,7 +89,17 @@ public class PointSelector : MonoBehaviour
 
             if (currentGenerationState == FSM_States.GenerateCityBlocks && currentSelectedPointType is Spawnpoint)
             {
-                if (Input.GetMouseButtonDown(0)) selectSpawnpoint(hit);
+                if (Input.GetMouseButton(0))
+                {
+                    spawnpointSelectionMode = SpawnpointSelection.Select;
+                    selectSpawnpoint(hit);
+                }
+
+                if (Input.GetMouseButton(1))
+                {
+                    spawnpointSelectionMode = SpawnpointSelection.Deselect;
+                    selectSpawnpoint(hit);
+                }
             }
         }
     }
@@ -101,9 +120,20 @@ public class PointSelector : MonoBehaviour
 
         currentlySelectedSpawnpoint = pHit.collider.gameObject.GetComponent<Spawnpoint>();
 
-        MeshRenderer renderer = pHit.collider.gameObject.GetComponent<MeshRenderer>();
-        renderer.material.color = Color.red;
+        if (currentlySelectedSpawnpoint != null)
+        {
+            MeshRenderer renderer = pHit.collider.gameObject.GetComponent<MeshRenderer>();
+            if (spawnpointSelectionMode == SpawnpointSelection.Select)
+            {
+                renderer.material.color = Color.red;
+            }
 
-        onSpawnpointSelect.Invoke(currentlySelectedSpawnpoint, mousePositionOnGround);
+            if (spawnpointSelectionMode == SpawnpointSelection.Deselect)
+            {
+                renderer.material.color = originalSpawnpointColor;
+            }
+        }
+
+        onSpawnpointSelect.Invoke(currentlySelectedSpawnpoint, mousePositionOnGround, spawnpointSelectionMode);
     }
 }

@@ -40,6 +40,8 @@ public class NodeEditor : FSM_State
     private GameObject spawnpointPrefab;
     public Node_EditModes CurrentMode;
 
+    [SerializeField] private Transform spawnpointParent;
+    [SerializeField] private Transform nodeParent;
     [SerializeField] private List<Node> allNodes = new List<Node>();
     private Node currentlySelectedNode;
     private Node firstNode;
@@ -61,6 +63,8 @@ public class NodeEditor : FSM_State
     private Vector3 buildingSize;
     private Vector3 buildingOffset;
     [HideInInspector] public bool HasCalculatedSpawnpoints;
+
+    public static Vector3 Centroid;
 
     private void Awake()
     {
@@ -114,6 +118,11 @@ public class NodeEditor : FSM_State
     {
         nodePositions.Clear();
         outerCorners.Clear();
+
+        foreach (var spawnpoint in spawnPointsList)
+        {
+            Destroy(spawnpoint.gameObject);
+        }
         spawnPointsList.Clear();
     }
 
@@ -211,6 +220,8 @@ public class NodeEditor : FSM_State
         outerCorners.Insert(1, currentTopRight);
         outerCorners.Insert(2, currentBottomRight);
         outerCorners.Insert(3, currentBottomLeft);
+
+        Centroid = GridHelperClass.GetCentroidOfArea(outerCorners);
     }
 
     private void alignCornersToRectangle()
@@ -302,7 +313,7 @@ public class NodeEditor : FSM_State
                 Vector3 position = new Vector3(startPosition.x + (buildingSize.x + buildingOffset.x) * x,
                     0f,
                     startPosition.z - (buildingSize.z + buildingOffset.z) * z);
-                GameObject newSpawnpointGO = Instantiate(spawnpointPrefab, position, Quaternion.identity, this.transform);
+                GameObject newSpawnpointGO = Instantiate(spawnpointPrefab, position, Quaternion.identity, spawnpointParent);
                 Spawnpoint newSpawnpointData = newSpawnpointGO.GetComponent<Spawnpoint>();
                 
                 newSpawnpointData.position = position;
@@ -314,7 +325,7 @@ public class NodeEditor : FSM_State
 
     private void createNode()
     {
-        GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, transform);
+        GameObject GO_newNode = Instantiate(nodePrefab, mousePositionOnGround, Quaternion.identity, nodeParent);
         GO_newNode.name = "Node " + allNodes.Count;
 
         Node node = GO_newNode.GetComponent<Node>();
@@ -427,23 +438,23 @@ public class NodeEditor : FSM_State
             }
         }
 
-        Gizmos.color = Color.green;
-        for (int i = 0; i < outerCorners.Count; i++)
-        {
-            Gizmos.DrawSphere(outerCorners[i], 2f);
-            Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
-            Handles.Label(labelPosition, $"index: {i}");
-
-            int previousIndex = i - 1;
-            if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
-
-            int currentIndex = i;
-
-            int nextIndex = i + 1;
-            if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
-
-            Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
-            Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
-        }
+        // Gizmos.color = Color.green;
+        // for (int i = 0; i < outerCorners.Count; i++)
+        // {
+        //     Gizmos.DrawSphere(outerCorners[i], 2f);
+        //     Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
+        //     Handles.Label(labelPosition, $"index: {i}");
+        //
+        //     int previousIndex = i - 1;
+        //     if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
+        //
+        //     int currentIndex = i;
+        //
+        //     int nextIndex = i + 1;
+        //     if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
+        //
+        //     Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
+        //     Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
+        // }
     }
 }
