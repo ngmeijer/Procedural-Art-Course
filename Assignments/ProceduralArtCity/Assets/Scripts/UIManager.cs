@@ -77,7 +77,6 @@ public class UIManager : MonoBehaviour
                 break; 
         }
 
-        Debug.Log(pNewMode.ToString());
         currentNodeEditMode = pNewMode.ToString();
     }
 

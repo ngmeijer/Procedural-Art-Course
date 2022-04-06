@@ -57,6 +57,7 @@ public class GeneratorFSM : MonoBehaviour
     private void Start()
     {
         ProcessNewNodeEditModeRequest(Node_EditModes.PlaceNode);
+        ProcessNewGenerationModeRequest(FSM_States.None);
     }
 
     public void ProcessNewNodeEditModeRequest(Node_EditModes pNewMode)
@@ -98,7 +99,12 @@ public class GeneratorFSM : MonoBehaviour
 
     public void ProcessNewGenerationModeRequest(FSM_States pOldState)
     {
-        if(currentGenerator != null) currentGenerator.ExitState();
+        if (currentGenerator != null)
+        {
+            Debug.Log($"Exiting {pOldState}. Current generator: {currentGenerator.name}");
+
+            currentGenerator.ExitState();
+        }
         
         switch (pOldState)
         {

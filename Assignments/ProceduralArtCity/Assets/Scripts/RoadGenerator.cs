@@ -38,6 +38,7 @@ public class RoadGenerator : FSM_State
     {
         if (!isActive) return;
 
+        Debug.Log("Creating roads");
         CreateIntersections();
         createRoads();
         onModeExit.Invoke(FSM_States.GenerateRoads);

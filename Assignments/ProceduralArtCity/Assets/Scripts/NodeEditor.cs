@@ -127,12 +127,10 @@ public class NodeEditor : FSM_State
     {
         nodePositions.Clear();
         outerCorners.Clear();
-
-        Debug.Log(spawnPointsList.Count);
         
         foreach (var spawnpoint in spawnPointsList)
         {
-            Destroy(spawnpoint.gameObject);
+            if(spawnpoint != null) Destroy(spawnpoint.gameObject);
         }
         spawnPointsList.Clear();
     }
@@ -192,7 +190,7 @@ public class NodeEditor : FSM_State
             nodePositions.Add(allNodes[i].position);
         }
 
-        Debug.Log(nodePositions.Count);
+        Debug.Log($"total node count: {allNodes.Count}. position count: {nodePositions.Count}");
         
         cityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
 
@@ -413,7 +411,7 @@ public class NodeEditor : FSM_State
         {
             allNodes[i].connectedNodes.Remove(nodesToRemove[i]);
             allNodes.Remove(nodesToRemove[i]);
-            Destroy(nodesToRemove[i].gameObject);
+            if(nodesToRemove[i] != null) Destroy(nodesToRemove[i].gameObject);
         }
     }
 

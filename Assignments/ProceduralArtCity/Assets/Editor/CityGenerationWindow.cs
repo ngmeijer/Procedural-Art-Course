@@ -118,7 +118,6 @@ public class CityGenerationWindow : EditorWindow
             GUILayout.EndHorizontal();
         }
         
-        Debug.Log($"new edit mode: {newEditMode}, current edit mode: {currentEditMode}");
         if (newEditMode != currentEditMode)
         {
             Debug.Log(newEditMode);
