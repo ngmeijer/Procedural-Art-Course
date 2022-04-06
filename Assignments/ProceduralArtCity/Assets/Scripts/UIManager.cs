@@ -14,7 +14,7 @@ public class Event_OnClickNewMode : UnityEvent<string>
 public class UIManager : MonoBehaviour
 {
     private GUIStyle labelStyle = new GUIStyle();
-    public string currentNodeEditMode = "none selected";
+    public string currentNodeEditMode = "";
     private string nodeInstructions;
 
     public static UnityEvent onClickCreateSaveFile = new UnityEvent();
@@ -24,9 +24,9 @@ public class UIManager : MonoBehaviour
     public static Event_OnCityBlockAction onCityBlockInitialize = new Event_OnCityBlockAction();
     public static Event_OnCityBlockAction onCityBlockFinish = new Event_OnCityBlockAction();
     private FSM_States currentState;
-    private string currentGenerationMode;
+    private string currentGenerationMode = "GenerateNodes";
 
-    private void OnEnable()
+    private void Awake()
     {
         labelStyle.fontSize = 30;
         
@@ -45,6 +45,7 @@ public class UIManager : MonoBehaviour
         switch (pNewState)
         {
             case FSM_States.GenerateNodes:
+                //instructions
                 break;
             case FSM_States.GenerateRoads:
                 break;
@@ -76,6 +77,7 @@ public class UIManager : MonoBehaviour
                 break; 
         }
 
+        Debug.Log(pNewMode.ToString());
         currentNodeEditMode = pNewMode.ToString();
     }
 
@@ -97,6 +99,6 @@ public class UIManager : MonoBehaviour
         labelStyle.normal.textColor = Color.black;
         labelStyle.fontSize = 25;
         GUI.Label(new Rect(10, 130, 100, 50), nodeInstructions, labelStyle);
-        GUI.Label(new Rect(10, 180, 100, 50), "Press TAB to \nlock/unlock \ncamera movement", labelStyle);
+        GUI.Label(new Rect(10, 180, 100, 50), "Press tab to \nlock/unlock \ncamera movement", labelStyle);
     }
 }

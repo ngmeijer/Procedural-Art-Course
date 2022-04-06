@@ -10,6 +10,7 @@ public enum BuildingType
 {
     House,
     Skyscraper,
+    NoPreference
 }
 
 public class ProceduralBuilding : MonoBehaviour

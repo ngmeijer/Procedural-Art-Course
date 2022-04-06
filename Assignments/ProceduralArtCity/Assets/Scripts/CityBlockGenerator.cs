@@ -26,6 +26,7 @@ public class CityBlockGenerator : FSM_State
     private GameObject buildingContainer;
     private bool currentlyEditingBlock;
     private Transform cityBlockParent;
+    public BuildingType currentPreferredBuildingType;
 
     private void Awake()
     {
@@ -57,16 +58,21 @@ public class CityBlockGenerator : FSM_State
 
     public void FinishCityBlock()
     {
+        Debug.Log("finished city block! 1");
         findCentroidOfBlock();
         calculateInnerCorners();
         
+        Debug.Log("finished city block! 2");
+        
         CityBlock currentBlock = cityBlocksData[currentSelectedIndex];
+        Debug.Log(currentBlock.spawnPoints.Count);
         for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
         {
             GameObject building = Instantiate(buildingContainer, currentBlock.spawnPoints[i].position, Quaternion.identity, currentBlock.parent);
             currentBlock.spawnedBuildings.Add(building);
         }
 
+        currentPreferredBuildingType = BuildingType.NoPreference;
         currentlyEditingBlock = false;
     }
 

@@ -58,8 +58,8 @@ public class NodeEditor : FSM_State
     private float mostBottom;
     
     private List<Vector3> outerCorners = new List<Vector3>();
-    private List<Vector3> nodePositions = new List<Vector3>();
-    private List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
+    public List<Vector3> nodePositions = new List<Vector3>();
+    public List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
     private Vector3 buildingSize;
     private Vector3 buildingOffset;
@@ -97,7 +97,6 @@ public class NodeEditor : FSM_State
 
     public void RecalculateSpawnpoints()
     {
-        Debug.Log("recalculating spawnpoints");
         clearOldData();
         destroyUnconnectedNodes();
         calculateOuterCorners();
@@ -129,6 +128,8 @@ public class NodeEditor : FSM_State
         nodePositions.Clear();
         outerCorners.Clear();
 
+        Debug.Log(spawnPointsList.Count);
+        
         foreach (var spawnpoint in spawnPointsList)
         {
             Destroy(spawnpoint.gameObject);
@@ -191,6 +192,8 @@ public class NodeEditor : FSM_State
             nodePositions.Add(allNodes[i].position);
         }
 
+        Debug.Log(nodePositions.Count);
+        
         cityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
 
         Dictionary<Vector3, float> distancesToCentroid = new Dictionary<Vector3, float>();
@@ -311,6 +314,9 @@ public class NodeEditor : FSM_State
         int countZ = (gridDepth / zDivision) + 1;
 
         Vector3 startPosition = outerCorners[0];
+        
+        Debug.Log(countX);
+        Debug.Log(countZ);
 
         for (int x = 0; x < countX; x++)
         {
