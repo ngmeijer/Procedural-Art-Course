@@ -23,7 +23,7 @@ public class ProceduralBuilding : MonoBehaviour
     [SerializeField] private List<GameObject> availableFloorStacks;
     [SerializeField] private List<GameObject> availableMiddleStacks;
     [SerializeField] private List<GameObject> availableRoofStacks;
-    [SerializeField] [Range(1, 10f)] private float stackHeight = 2f;
+    public static float StackHeight;
 
     [SerializeField] private Transform middleStacksParent;
 
@@ -103,7 +103,7 @@ public class ProceduralBuilding : MonoBehaviour
     {
         int randomIndex = Random.Range(0, availableFloorStacks.Count - 1);
 
-        bottomPosition = transform.position + new Vector3(0, stackHeight / 2, 0);
+        bottomPosition = transform.position + new Vector3(0, StackHeight / 2, 0);
         GameObject stack = Instantiate(availableFloorStacks[randomIndex], bottomPosition, Quaternion.identity,
             transform);
         stack.name = "[ FLOOR ]";
@@ -122,7 +122,7 @@ public class ProceduralBuilding : MonoBehaviour
         int randomIndex = Random.Range(0, availableMiddleStacks.Count - 1);
 
         GameObject stack = Instantiate(availableMiddleStacks[randomIndex],
-            bottomPosition + new Vector3(0, stackHeight * currentAmountOfStacks, 0), Quaternion.identity,
+            bottomPosition + new Vector3(0, StackHeight * currentAmountOfStacks, 0), Quaternion.identity,
             middleStacksParent);
         stack.name = $"[ MIDDLE STACK {currentAmountOfStacks} ]";
         spawnedStacks.Add(stack);
@@ -141,7 +141,7 @@ public class ProceduralBuilding : MonoBehaviour
         int randomIndex = Random.Range(0, availableRoofStacks.Count - 1);
 
         GameObject stack = Instantiate(availableRoofStacks[randomIndex],
-            bottomPosition + new Vector3(0, stackHeight * currentAmountOfStacks, 0), Quaternion.identity, transform);
+            bottomPosition + new Vector3(0, StackHeight * currentAmountOfStacks, 0), Quaternion.identity, transform);
         stack.name = "[ ROOF ]";
         spawnedStacks.Add(stack);
     }

@@ -20,6 +20,8 @@ public class CityGenerationWindow : EditorWindow
     private bool showCityBlockEditor;
     private Vector3 buildingSize = new Vector3(5, 0, 0);
     private Vector3 buildingOffset;
+    private float stackHeight;
+    private Vector2 stackHeightLimits;
 
     [MenuItem("Window/City Generator")]
     public static void ShowWindow()
@@ -66,9 +68,15 @@ public class CityGenerationWindow : EditorWindow
         createGUIStyles();
 
         handleGeneralGUI();
+        
+        GUILayout.Space(20);
         handleNodeGUI();
+        GUILayout.Space(40);
         handleRoadGUI();
+        GUILayout.Space(40);
         handleCityBlockGUI();
+
+        if (GUI.changed) OnValidate();
     }
 
     private void handleGeneralGUI()
@@ -77,9 +85,8 @@ public class CityGenerationWindow : EditorWindow
 
     private void handleNodeGUI()
     {
-        GUILayout.Space(20);
         showNodeEditor = EditorGUILayout.Foldout(showNodeEditor, "Node editing", true, foldoutStyle);
-        
+
         if (showNodeEditor)
         {
             GUILayout.Space(10);
@@ -137,7 +144,7 @@ public class CityGenerationWindow : EditorWindow
 
             GUILayout.EndHorizontal();
         }
-        
+
         if (changedNodeEditMode)
         {
             generator.ProcessNewNodeEditModeRequest(newEditMode);
@@ -148,7 +155,6 @@ public class CityGenerationWindow : EditorWindow
 
     private void handleRoadGUI()
     {
-        GUILayout.Space(20);
         showRoadEditor = EditorGUILayout.Foldout(showRoadEditor, "Road editing", true, foldoutStyle);
 
         if (showRoadEditor)
@@ -162,30 +168,47 @@ public class CityGenerationWindow : EditorWindow
 
     private void handleCityBlockGUI()
     {
-        GUILayout.Space(20);
         showCityBlockEditor = EditorGUILayout.Foldout(showCityBlockEditor, "City block editing", true, foldoutStyle);
 
         if (showCityBlockEditor)
         {
             GUILayout.Space(10);
-            GUILayout.Label("Optional Parameters", subHeaderStyle, GUILayout.Height(30));
-            GUILayout.Label(
-                "Only edit these options if you want the neighbourhood \nto have a specific feeling/building type!",
-                paragraphStyle, GUILayout.Height(40));
 
-            GUILayout.Space(5);
+            GUILayout.Label("Building settings", subHeaderStyle, GUILayout.Height(30));
             buildingType = (BuildingType) EditorGUILayout.EnumPopup("Building type:", buildingType);
             generator.ProcessCityBlockPreferredBuildingType(buildingType);
             GUILayout.Space(10);
-
-            GUILayout.Label("Mandatory Parameters", subHeaderStyle, GUILayout.Height(30));
             GUILayout.BeginHorizontal();
 
-            buildingSize = EditorGUILayout.Vector3Field("Building Size", buildingSize);
-            buildingSize = EditorGUILayout.Vector3Field("Building Offset", buildingOffset);
+            EditorGUILayout.LabelField("Building \nwidth", GUILayout.Width(50), GUILayout.Height(30));
+            buildingSize.x = EditorGUILayout.FloatField(buildingSize.x, GUILayout.Height(30));
+
+            EditorGUILayout.LabelField("Building \ndepth", GUILayout.Width(50), GUILayout.Height(30));
+            buildingSize.z = EditorGUILayout.FloatField(buildingSize.z, GUILayout.Height(30));
+
+            GUILayout.Space(50);
+
+            EditorGUILayout.LabelField("Building \noffset X", GUILayout.Width(50), GUILayout.Height(30));
+            buildingOffset.x = EditorGUILayout.FloatField(buildingOffset.x, GUILayout.Height(30));
+
+            EditorGUILayout.LabelField("Building \noffset Z", GUILayout.Width(50), GUILayout.Height(30));
+            buildingOffset.z = EditorGUILayout.FloatField(buildingOffset.z, GUILayout.Height(30));
+
             GUILayout.EndHorizontal();
 
-            GUILayout.Space(10);
+            GUILayout.Space(5);
+
+            GUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Stack height", GUILayout.Width(80), GUILayout.Height(20));
+            
+            stackHeight = EditorGUILayout.Slider(stackHeight, 0, stackHeightLimits.y);
+            
+            EditorGUILayout.LabelField("Max:", GUILayout.Width(30));
+            stackHeightLimits.y = EditorGUILayout.FloatField(stackHeightLimits.y, GUILayout.Width(45),GUILayout.Height(20));
+
+            GUILayout.EndHorizontal();
+
+            GUILayout.Space(40);
             GUILayout.BeginHorizontal();
             GUI.backgroundColor = Color.grey;
             if (GUILayout.Button("Create new \ncity block", buttonStyle, GUILayout.Height(50)))
@@ -201,5 +224,13 @@ public class CityGenerationWindow : EditorWindow
 
             GUILayout.EndHorizontal();
         }
+    }
+
+    private void OnValidate()
+    {
+        generator.buildingSize = new Vector3(buildingSize.x, 0f, buildingSize.z);
+        generator.buildingOffset = new Vector3(buildingOffset.x, 0f, buildingOffset.z);
+
+        generator.stackHeight = stackHeight;
     }
 }

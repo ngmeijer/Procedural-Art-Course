@@ -60,8 +60,8 @@ public class NodeEditor : FSM_State
     public List<Vector3> nodePositions = new List<Vector3>();
     public List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
-    private Vector3 buildingSize;
-    private Vector3 buildingOffset;
+    [HideInInspector] public Vector3 buildingSize;
+    [HideInInspector] public Vector3 buildingOffset;
     public static bool HasCalculatedSpawnpoints;
 
     public static Vector3 Centroid;
@@ -190,19 +190,8 @@ public class NodeEditor : FSM_State
         {
             nodePositions.Add(allNodes[i].position);
         }
-        
+
         CityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
-
-        Dictionary<Vector3, float> distancesToCentroid = new Dictionary<Vector3, float>();
-        for (int i = 0; i < nodePositions.Count; i++)
-        {
-            float distance = Vector3.Distance(CityCentroid, nodePositions[i]);
-            distancesToCentroid.Add(nodePositions[i], distance);
-        }
-
-        Dictionary<Vector3, float> highestDistances = distancesToCentroid.OrderByDescending(pair => pair.Value).Take(4)
-            .ToDictionary(pair => pair.Key, pair => pair.Value);
-        List<Vector3> highestDistancesKeys = highestDistances.Keys.ToList();
 
         //Now the points are still sorted on distance. We want them sorted clockwise based on position, starting top-left.
         Vector3 currentTopLeft = CityCentroid;
@@ -446,7 +435,6 @@ public class NodeEditor : FSM_State
         }
 
         Gizmos.color = Color.green;
-        Debug.Log(outerCorners.Count);
         for (int i = 0; i < outerCorners.Count; i++)
         {
             Gizmos.DrawSphere(outerCorners[i], 2f);

@@ -43,7 +43,11 @@ public class GeneratorFSM : MonoBehaviour
     public FSM_States currentState;
     public Node_EditModes currentEditMode = Node_EditModes.NoneSelected;
     private Node_EditModes oldEditMode;
-    
+
+    public Vector3 buildingSize;
+    public Vector3 buildingOffset;
+    public float stackHeight;
+
     private void Awake()
     {
         nodeEditor = FindObjectOfType<NodeEditor>();
@@ -76,6 +80,7 @@ public class GeneratorFSM : MonoBehaviour
     public void ProcessRoadGenerationRequest()
     {
         roadGenerator.InitializeRoads();
+        ProcessNewGenerationModeRequest(FSM_States.GenerateRoads);
     }
 
     public void ProcessCityBlockActionRequest(CityBlockActions pAction)
@@ -125,5 +130,16 @@ public class GeneratorFSM : MonoBehaviour
         currentGenerator.EnterState();
         
         broadcastGenerationModeChange.Invoke(currentState);
+    }
+
+    private void OnValidate()
+    {
+        if (nodeEditor != null)
+        {
+            nodeEditor.buildingSize = buildingSize;
+            nodeEditor.buildingOffset = buildingOffset;
+        }
+
+        ProceduralBuilding.StackHeight = stackHeight;
     }
 }

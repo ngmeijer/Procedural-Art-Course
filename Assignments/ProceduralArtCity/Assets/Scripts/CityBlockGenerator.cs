@@ -18,27 +18,18 @@ public class CityBlockGenerator : FSM_State
     private int currentSelectedIndex = -1;
     private Vector3 currentCentroidPoint;
     
-    [SerializeField] private float innerOffset = 3f;
-    [SerializeField] private Vector3 buildingSize = new Vector3(5,5,5);
-    [SerializeField] private Vector3 buildingOffset = new Vector3(2, 2, 2);
-    
     private Dictionary<int, Vector3> planeClosestVertices = new Dictionary<int, Vector3>();
     private GameObject buildingContainer;
     private bool currentlyEditingBlock;
     private Transform cityBlockParent;
     public BuildingType currentPreferredBuildingType;
-
+    
     private void Awake()
     {
         PointSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
         PointSelector.onSpawnpointSelect.AddListener(determineSpawnpointAction);
 
         buildingContainer = Resources.Load<GameObject>("Prefabs/Building");
-    }
-
-    private void Start()
-    {
-        onBuildingSettingsChanged.Invoke(buildingSize, buildingOffset);
     }
 
     public override void EnterState()
@@ -58,14 +49,10 @@ public class CityBlockGenerator : FSM_State
 
     public void FinishCityBlock()
     {
-        Debug.Log("finished city block! 1");
         findCentroidOfBlock();
-        calculateInnerCorners();
-        
-        Debug.Log("finished city block! 2");
         
         CityBlock currentBlock = cityBlocksData[currentSelectedIndex];
-        Debug.Log(currentBlock.spawnPoints.Count);
+
         for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
         {
             GameObject building = Instantiate(buildingContainer, currentBlock.spawnPoints[i].position, Quaternion.identity, currentBlock.parent);
@@ -134,31 +121,6 @@ public class CityBlockGenerator : FSM_State
 
         cityBlocksData[currentSelectedIndex].centroid = currentCentroidPoint;
         cityBlocksData[currentSelectedIndex].parent.position = currentCentroidPoint;
-    }
-
-    private void calculateInnerCorners()
-    {
-        List<Vector3> outerCorners = cityBlocksData[currentSelectedIndex].outerCorners;
-        Vector3 centroid = cityBlocksData[currentSelectedIndex].centroid;
-        for (int i = 0; i < outerCorners.Count; i++)
-        {
-            Vector3 directionVector = outerCorners[i] - centroid;
-            float originalLength = directionVector.magnitude;
-            directionVector.Normalize();
-
-            float relativeOffset = innerOffset / originalLength;
-
-            float newLength = originalLength - (originalLength * relativeOffset);
-            directionVector *= newLength;
-
-            Vector3 innerCorner = directionVector + centroid;
-            cityBlocksData[currentSelectedIndex].innerCorners.Add(innerCorner);
-        }
-    }
-
-    private void OnValidate()
-    {
-        onBuildingSettingsChanged.Invoke(buildingSize, buildingOffset);
     }
 
     private void OnDrawGizmos()
