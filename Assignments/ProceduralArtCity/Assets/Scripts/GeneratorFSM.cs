@@ -39,8 +39,8 @@ public class GeneratorFSM : MonoBehaviour
     private NodeEditor nodeEditor;
     private RoadGenerator roadGenerator;
     private CityBlockGenerator cityBlockGenerator;
-    private FSM_State currentGenerator;
-    private FSM_States currentState;
+    public FSM_State currentGenerator;
+    public FSM_States currentState;
     public Node_EditModes currentEditMode = Node_EditModes.NoneSelected;
     private Node_EditModes oldEditMode;
     
@@ -49,10 +49,6 @@ public class GeneratorFSM : MonoBehaviour
         nodeEditor = FindObjectOfType<NodeEditor>();
         roadGenerator = FindObjectOfType<RoadGenerator>();
         cityBlockGenerator = FindObjectOfType<CityBlockGenerator>();
-        
-        nodeEditor.onModeExit.AddListener(ProcessNewGenerationModeRequest);
-        roadGenerator.onModeExit.AddListener(ProcessNewGenerationModeRequest);
-        cityBlockGenerator.onModeExit.AddListener(ProcessNewGenerationModeRequest);
     }
 
     private void Start()
@@ -69,7 +65,6 @@ public class GeneratorFSM : MonoBehaviour
         {
             currentEditMode = pNewMode;
             broadcastNodeEditModeChange.Invoke(pNewMode);
-            Debug.Log("Invoking node mode change");
         }
     }
 
@@ -106,13 +101,8 @@ public class GeneratorFSM : MonoBehaviour
 
     public void ProcessNewGenerationModeRequest(FSM_States pOldState)
     {
-        if (currentGenerator != null)
-        {
-            Debug.Log($"Exiting {pOldState}. Current generator: {currentGenerator.name}");
+        if (currentGenerator != null) currentGenerator.ExitState();
 
-            currentGenerator.ExitState();
-        }
-        
         switch (pOldState)
         {
             case FSM_States.None:
@@ -120,7 +110,7 @@ public class GeneratorFSM : MonoBehaviour
                 currentState = FSM_States.GenerateNodes;
                 break;
             case FSM_States.GenerateNodes:
-                nodeEditor.transferNodes();
+                nodeEditor.SaveToFile();
                 currentGenerator = roadGenerator;
                 currentState = FSM_States.GenerateRoads;
                 break;

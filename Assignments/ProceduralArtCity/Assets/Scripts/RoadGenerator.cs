@@ -14,25 +14,15 @@ public class RoadGenerator : FSM_State
 
     private Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
 
-    private void Start()
-    {
-        NodeEditor.eventTransferToRoadGenerator.AddListener(ReceiveNodeData);
-    }
+    public override void EnterState() => isActive = true;
 
-    public override void EnterState()
-    {
-        isActive = true;
-    }
-
-    public override void ExitState()
-    {
-        isActive = false;
-    }
+    public override void ExitState() => isActive = false;
 
     public void ReceiveNodeData(List<Node> pNodes)
     {
         allNodes = pNodes;
-    }
+        Debug.Log($"Receiving node data. Test: {pNodes[1]}");
+    } 
 
     public void InitializeRoads()
     {
@@ -40,7 +30,6 @@ public class RoadGenerator : FSM_State
 
         CreateIntersections();
         createRoads();
-        onModeExit.Invoke(FSM_States.GenerateRoads);
     }
 
     public void CreateIntersections()

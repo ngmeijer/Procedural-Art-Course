@@ -131,7 +131,6 @@ public class CityGenerationWindow : EditorWindow
 
             if (GUILayout.Button("Confirm map", buttonStyle, GUILayout.Height(30)))
             {
-                Debug.Log(NodeEditor.HasCalculatedSpawnpoints);
                 if (!NodeEditor.HasCalculatedSpawnpoints) return;
                 generator.ProcessNewGenerationModeRequest(FSM_States.GenerateNodes);
             }

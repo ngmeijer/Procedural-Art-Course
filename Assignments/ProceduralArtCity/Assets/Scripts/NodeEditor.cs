@@ -6,7 +6,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
-[Serializable]
 public class Event_TransferNodeData : UnityEvent<List<Node>>
 {
 }
@@ -30,11 +29,11 @@ public class NodeEditor : FSM_State
 {
     public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
     public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
-    public static Event_TransferNodeData eventTransferToRoadGenerator = new Event_TransferNodeData();
     public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
-    public static UnityEvent<Node_EditModes> onSelectNewMode = new UnityEvent<Node_EditModes>();
     public static UnityEvent onRecalculateSpawnpoints = new UnityEvent();
-    
+    public UnityEvent<List<Node>> eventTransferToRoadGenerator = new UnityEvent<List<Node>>();
+
+    private PlayModeStateChange playmodeState;
     private Camera cam;
     private Vector3 currentPoint;
     private GameObject nodePrefab;
@@ -51,12 +50,12 @@ public class NodeEditor : FSM_State
 
     private bool currentlyMovingNode;
 
-    private Vector3 cityCentroid;
+    private Vector3 CityCentroid;
     private float mostLeft;
     private float mostRight;
     private float mostTop;
     private float mostBottom;
-    
+
     private List<Vector3> outerCorners = new List<Vector3>();
     public List<Vector3> nodePositions = new List<Vector3>();
     public List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
@@ -72,9 +71,9 @@ public class NodeEditor : FSM_State
         PointSelector.onNodeSelect.AddListener(determineAction);
         CityBlockGenerator.onBuildingSettingsChanged.AddListener(updateBuildingSettings);
         GeneratorFSM.broadcastNodeEditModeChange.AddListener(updateEditMode);
-        
+
         onRecalculateSpawnpoints.AddListener(RecalculateSpawnpoints);
-        
+
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
         spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
     }
@@ -100,7 +99,7 @@ public class NodeEditor : FSM_State
         clearOldData();
         destroyUnconnectedNodes();
         calculateOuterCorners();
-        alignCornersToRectangle();
+        alignOuterNodesToRectangle();
         createSpawnpoints();
 
         HasCalculatedSpawnpoints = true;
@@ -127,16 +126,18 @@ public class NodeEditor : FSM_State
     {
         nodePositions.Clear();
         outerCorners.Clear();
-        
+
         foreach (var spawnpoint in spawnPointsList)
         {
-            if(spawnpoint != null) Destroy(spawnpoint.gameObject);
+            if (spawnpoint != null) Destroy(spawnpoint.gameObject);
         }
+
         spawnPointsList.Clear();
     }
 
-    public void transferNodes()
+    public void SaveToFile()
     {
+        Debug.Log(allNodes.Count);
         eventTransferToRoadGenerator.Invoke(allNodes);
     }
 
@@ -153,7 +154,7 @@ public class NodeEditor : FSM_State
     private void determineAction(Node pNode, Vector3 pMousePosition)
     {
         if (!isActive) return;
-        
+
         currentlySelectedNode = pNode;
         mousePositionOnGround = pMousePosition;
 
@@ -188,38 +189,33 @@ public class NodeEditor : FSM_State
         for (int i = 0; i < allNodes.Count; i++)
         {
             nodePositions.Add(allNodes[i].position);
-            Debug.Log(i);
         }
-
-        Debug.Log($"total node count: {allNodes.Count}. position count: {nodePositions.Count}");
         
-        cityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
+        CityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
 
         Dictionary<Vector3, float> distancesToCentroid = new Dictionary<Vector3, float>();
         for (int i = 0; i < nodePositions.Count; i++)
         {
-            float distance = Vector3.Distance(cityCentroid, nodePositions[i]);
+            float distance = Vector3.Distance(CityCentroid, nodePositions[i]);
             distancesToCentroid.Add(nodePositions[i], distance);
         }
 
         Dictionary<Vector3, float> highestDistances = distancesToCentroid.OrderByDescending(pair => pair.Value).Take(4)
             .ToDictionary(pair => pair.Key, pair => pair.Value);
-        outerCorners = highestDistances.Keys.ToList();
+        List<Vector3> highestDistancesKeys = highestDistances.Keys.ToList();
 
         //Now the points are still sorted on distance. We want them sorted clockwise based on position, starting top-left.
-        Vector3 currentTopLeft = cityCentroid;
-        Vector3 currentTopRight = cityCentroid;
-        Vector3 currentBottomRight = cityCentroid;
-        Vector3 currentBottomLeft = cityCentroid;
+        Vector3 currentTopLeft = CityCentroid;
+        Vector3 currentTopRight = CityCentroid;
+        Vector3 currentBottomRight = CityCentroid;
+        Vector3 currentBottomLeft = CityCentroid;
 
         for (int i = 0; i < nodePositions.Count; i++)
         {
             if (nodePositions[i].x > currentTopRight.x && nodePositions[i].z > currentTopRight.z)
                 currentTopRight = nodePositions[i];
             if (nodePositions[i].x > currentBottomRight.x && nodePositions[i].z < currentBottomRight.z)
-            {
                 currentBottomRight = nodePositions[i];
-            }
 
             if (nodePositions[i].x < currentBottomLeft.x && nodePositions[i].z < currentBottomLeft.z)
                 currentBottomLeft = nodePositions[i];
@@ -227,21 +223,15 @@ public class NodeEditor : FSM_State
                 currentTopLeft = nodePositions[i];
         }
 
-        outerCorners.Clear();
-        outerCorners.Insert(0, currentTopLeft);
-        outerCorners.Insert(1, currentTopRight);
-        outerCorners.Insert(2, currentBottomRight);
-        outerCorners.Insert(3, currentBottomLeft);
-
-        Centroid = GridHelperClass.GetCentroidOfArea(outerCorners);
+        outerCorners = new List<Vector3> {currentTopLeft, currentTopRight, currentBottomRight, currentBottomLeft};
     }
 
-    private void alignCornersToRectangle()
+    private void alignOuterNodesToRectangle()
     {
-        mostLeft = cityCentroid.x;
-        mostRight = cityCentroid.x;
-        mostTop = cityCentroid.z;
-        mostBottom = cityCentroid.z;
+        mostLeft = CityCentroid.x;
+        mostRight = CityCentroid.x;
+        mostTop = CityCentroid.z;
+        mostBottom = CityCentroid.z;
 
         for (int i = 0; i < nodePositions.Count; i++)
         {
@@ -313,9 +303,6 @@ public class NodeEditor : FSM_State
         int countZ = (gridDepth / zDivision) + 1;
 
         Vector3 startPosition = outerCorners[0];
-        
-        Debug.Log(xDivision);
-        Debug.Log(zDivision);
 
         for (int x = 0; x < countX; x++)
         {
@@ -324,9 +311,10 @@ public class NodeEditor : FSM_State
                 Vector3 position = new Vector3(startPosition.x + (buildingSize.x + buildingOffset.x) * x,
                     0f,
                     startPosition.z - (buildingSize.z + buildingOffset.z) * z);
-                GameObject newSpawnpointGO = Instantiate(spawnpointPrefab, position, Quaternion.identity, spawnpointParent);
+                GameObject newSpawnpointGO =
+                    Instantiate(spawnpointPrefab, position, Quaternion.identity, spawnpointParent);
                 Spawnpoint newSpawnpointData = newSpawnpointGO.GetComponent<Spawnpoint>();
-                
+
                 newSpawnpointData.position = position;
 
                 spawnPointsList.Add(newSpawnpointData);
@@ -412,7 +400,7 @@ public class NodeEditor : FSM_State
         {
             allNodes[i].connectedNodes.Remove(nodesToRemove[i]);
             allNodes.Remove(nodesToRemove[i]);
-            if(nodesToRemove[i] != null) Destroy(nodesToRemove[i].gameObject);
+            if (nodesToRemove[i] != null) Destroy(nodesToRemove[i].gameObject);
         }
     }
 
@@ -423,13 +411,20 @@ public class NodeEditor : FSM_State
         currentlySelectedNode = null;
     }
 
+
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red;
 
+        if (CityCentroid != Vector3.zero)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawSphere(CityCentroid, 4f);
+        }
+
         if (currentlySelectedNode != null)
         {
-            Vector3 position = currentlySelectedNode.position + new Vector3(0, 2,2);
+            Vector3 position = currentlySelectedNode.position + new Vector3(0, 2, 2);
             Handles.Label(position, "Current node");
         }
 
@@ -451,20 +446,21 @@ public class NodeEditor : FSM_State
         }
 
         Gizmos.color = Color.green;
+        Debug.Log(outerCorners.Count);
         for (int i = 0; i < outerCorners.Count; i++)
         {
             Gizmos.DrawSphere(outerCorners[i], 2f);
             Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
             Handles.Label(labelPosition, $"index: {i}");
-        
+
             int previousIndex = i - 1;
             if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
-        
+
             int currentIndex = i;
-        
+
             int nextIndex = i + 1;
             if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
-        
+
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
         }

@@ -107,12 +107,26 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isActive: 1
-  onModeExit:
+  eventTransferToRoadGenerator:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: RoadGenerator, Assembly-CSharp
+        m_MethodName: ReceiveNodeData
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   spawnpointParent: {fileID: 5401456401216578241}
   nodeParent: {fileID: 5401456401382687029}
   allNodes: []
+  nodePositions: []
+  spawnPointsList: []
 --- !u!114 &5401456402154663397
 MonoBehaviour:
   m_ObjectHideFlags: 0
