@@ -188,6 +188,7 @@ public class NodeEditor : FSM_State
         for (int i = 0; i < allNodes.Count; i++)
         {
             nodePositions.Add(allNodes[i].position);
+            Debug.Log(i);
         }
 
         Debug.Log($"total node count: {allNodes.Count}. position count: {nodePositions.Count}");
@@ -313,8 +314,8 @@ public class NodeEditor : FSM_State
 
         Vector3 startPosition = outerCorners[0];
         
-        Debug.Log(countX);
-        Debug.Log(countZ);
+        Debug.Log(xDivision);
+        Debug.Log(zDivision);
 
         for (int x = 0; x < countX; x++)
         {
@@ -426,13 +427,15 @@ public class NodeEditor : FSM_State
     {
         Gizmos.color = Color.red;
 
+        if (currentlySelectedNode != null)
+        {
+            Vector3 position = currentlySelectedNode.position + new Vector3(0, 2,2);
+            Handles.Label(position, "Current node");
+        }
+
         for (int nodeInListIndex = 0; nodeInListIndex < allNodes.Count; nodeInListIndex++)
         {
             Vector3 currentNodePos = allNodes[nodeInListIndex].position;
-
-            if (allNodes[nodeInListIndex] == currentlySelectedNode) Gizmos.color = Color.magenta;
-            else Gizmos.color = Color.red;
-            Gizmos.DrawSphere(currentNodePos, 1.5f);
 
             if (allNodes[nodeInListIndex].connectedNodes.Count == 0) continue;
 
@@ -443,28 +446,27 @@ public class NodeEditor : FSM_State
                 Vector3 connectedNodePos =
                     allNodes[nodeInListIndex].connectedNodes[connectionsInNode].position;
 
-
                 Debug.DrawLine(currentNodePos, connectedNodePos);
             }
         }
 
-        // Gizmos.color = Color.green;
-        // for (int i = 0; i < outerCorners.Count; i++)
-        // {
-        //     Gizmos.DrawSphere(outerCorners[i], 2f);
-        //     Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
-        //     Handles.Label(labelPosition, $"index: {i}");
-        //
-        //     int previousIndex = i - 1;
-        //     if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
-        //
-        //     int currentIndex = i;
-        //
-        //     int nextIndex = i + 1;
-        //     if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
-        //
-        //     Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
-        //     Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
-        // }
+        Gizmos.color = Color.green;
+        for (int i = 0; i < outerCorners.Count; i++)
+        {
+            Gizmos.DrawSphere(outerCorners[i], 2f);
+            Vector3 labelPosition = outerCorners[i] + new Vector3(0, 10, 5);
+            Handles.Label(labelPosition, $"index: {i}");
+        
+            int previousIndex = i - 1;
+            if (previousIndex < 0) previousIndex = outerCorners.Count - 1;
+        
+            int currentIndex = i;
+        
+            int nextIndex = i + 1;
+            if (nextIndex > outerCorners.Count - 1) nextIndex = 0;
+        
+            Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
+            Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
+        }
     }
 }

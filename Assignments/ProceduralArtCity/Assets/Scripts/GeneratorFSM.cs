@@ -41,8 +41,9 @@ public class GeneratorFSM : MonoBehaviour
     private CityBlockGenerator cityBlockGenerator;
     private FSM_State currentGenerator;
     private FSM_States currentState;
-    public Node_EditModes currentEditMode = Node_EditModes.PlaceNode;
-
+    public Node_EditModes currentEditMode = Node_EditModes.NoneSelected;
+    private Node_EditModes oldEditMode;
+    
     private void Awake()
     {
         nodeEditor = FindObjectOfType<NodeEditor>();
@@ -62,8 +63,14 @@ public class GeneratorFSM : MonoBehaviour
 
     public void ProcessNewNodeEditModeRequest(Node_EditModes pNewMode)
     {
-        currentEditMode = pNewMode;
-        broadcastNodeEditModeChange.Invoke(pNewMode);
+        oldEditMode = currentEditMode;
+
+        if (pNewMode != oldEditMode || oldEditMode != Node_EditModes.NoneSelected)
+        {
+            currentEditMode = pNewMode;
+            broadcastNodeEditModeChange.Invoke(pNewMode);
+            Debug.Log("Invoking node mode change");
+        }
     }
 
     public void ProcessSpawnpointRegenerationRequest()

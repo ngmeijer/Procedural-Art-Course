@@ -10,7 +10,7 @@ public class RoadGenerator : FSM_State
     [SerializeField] private GameObject IntersectionPrefab;
     [SerializeField] private Material roadMaterial;
 
-    private List<Node> allNodes;
+    public List<Node> allNodes;
 
     private Dictionary<string, Vector3> coordinates = new Dictionary<string, Vector3>();
 
@@ -38,7 +38,6 @@ public class RoadGenerator : FSM_State
     {
         if (!isActive) return;
 
-        Debug.Log("Creating roads");
         CreateIntersections();
         createRoads();
         onModeExit.Invoke(FSM_States.GenerateRoads);

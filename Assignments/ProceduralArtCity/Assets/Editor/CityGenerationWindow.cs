@@ -6,7 +6,8 @@ public class CityGenerationWindow : EditorWindow
 {
     private GeneratorFSM generator;
     private Node_EditModes currentEditMode;
-    private Node_EditModes newEditMode;
+    private Node_EditModes newEditMode = Node_EditModes.PlaceNode;
+    private bool changedNodeEditMode;
     private BuildingType buildingType;
     private GUIStyle headerStyle;
     private GUIStyle buttonStyle;
@@ -30,7 +31,6 @@ public class CityGenerationWindow : EditorWindow
     private void OnEnable()
     {
         generator = FindObjectOfType<GeneratorFSM>();
-        currentEditMode = generator.currentEditMode;
     }
 
     private void createGUIStyles()
@@ -79,38 +79,59 @@ public class CityGenerationWindow : EditorWindow
     {
         GUILayout.Space(20);
         showNodeEditor = EditorGUILayout.Foldout(showNodeEditor, "Node editing", true, foldoutStyle);
-
+        
         if (showNodeEditor)
         {
             GUILayout.Space(10);
             GUILayout.BeginHorizontal();
             GUI.backgroundColor = Color.green;
-            if (GUILayout.Button("Place", buttonStyle, GUILayout.Height(40))) newEditMode = Node_EditModes.PlaceNode;
+            if (GUILayout.Button("Place", buttonStyle, GUILayout.Height(40)))
+            {
+                newEditMode = Node_EditModes.PlaceNode;
+                changedNodeEditMode = true;
+            }
 
             GUI.backgroundColor = Color.red;
             if (GUILayout.Button("Remove", buttonStyle, GUILayout.Height(40)))
+            {
                 newEditMode = Node_EditModes.RemoveNode;
+                changedNodeEditMode = true;
+            }
 
             GUI.backgroundColor = Color.yellow;
-            if (GUILayout.Button("Move", buttonStyle, GUILayout.Height(40))) newEditMode = Node_EditModes.MoveNode;
+            if (GUILayout.Button("Move", buttonStyle, GUILayout.Height(40)))
+            {
+                newEditMode = Node_EditModes.MoveNode;
+                changedNodeEditMode = true;
+            }
 
             GUI.backgroundColor = Color.magenta;
             if (GUILayout.Button("Connect", buttonStyle, GUILayout.Height(40)))
+            {
                 newEditMode = Node_EditModes.ConnectNode;
+                changedNodeEditMode = true;
+            }
 
             GUI.backgroundColor = Color.cyan;
             if (GUILayout.Button("Disconnect", buttonStyle, GUILayout.Height(40)))
+            {
                 newEditMode = Node_EditModes.DisconnectNode;
+                changedNodeEditMode = true;
+            }
+
             GUILayout.EndHorizontal();
 
             GUILayout.Space(20);
             GUILayout.BeginHorizontal();
             GUI.backgroundColor = Color.grey;
-            if (GUILayout.Button("Recalculate spawnpoints", buttonStyle, GUILayout.Height(30)))
+            if (GUILayout.Button("(Re)calculate spawnpoints", buttonStyle, GUILayout.Height(30)))
+            {
                 generator.ProcessSpawnpointRegenerationRequest();
+            }
 
             if (GUILayout.Button("Confirm map", buttonStyle, GUILayout.Height(30)))
             {
+                Debug.Log(NodeEditor.HasCalculatedSpawnpoints);
                 if (!NodeEditor.HasCalculatedSpawnpoints) return;
                 generator.ProcessNewGenerationModeRequest(FSM_States.GenerateNodes);
             }
@@ -118,11 +139,11 @@ public class CityGenerationWindow : EditorWindow
             GUILayout.EndHorizontal();
         }
         
-        if (newEditMode != currentEditMode)
+        if (changedNodeEditMode)
         {
-            Debug.Log(newEditMode);
             generator.ProcessNewNodeEditModeRequest(newEditMode);
             currentEditMode = newEditMode;
+            changedNodeEditMode = false;
         }
     }
 
