@@ -101,6 +101,8 @@ public class NodeEditor : FSM_State
         calculateOuterCorners();
         alignOuterNodesToRectangle();
         createSpawnpoints();
+        
+        Debug.Log(outerCorners.Count);
 
         HasCalculatedSpawnpoints = true;
     }

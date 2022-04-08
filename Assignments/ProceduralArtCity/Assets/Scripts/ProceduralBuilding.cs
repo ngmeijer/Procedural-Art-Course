@@ -27,24 +27,30 @@ public class ProceduralBuilding : MonoBehaviour
 
     [SerializeField] private Transform middleStacksParent;
 
-    [Header("House values")] 
-    [SerializeField] private float houseDistanceFactor;
+    [Header("House values")] [SerializeField]
+    private float houseDistanceFactor;
+
     [SerializeField] private float houseWeightFactor;
 
-    [Header("Skyscraper values")] 
-    [SerializeField] private float skyscraperDistanceFactor;
+    [Header("Skyscraper values")] [SerializeField]
+    private float skyscraperDistanceFactor;
+
     [SerializeField] private float skyscraperWeightFactor;
-    
+
     public BuildingType buildingType;
     private Vector3 bottomPosition;
     public float distanceToCentroid;
     public float houseValue;
     public float skyscraperValue;
 
+    [SerializeField] private List<Vector3> billboardSpawnpoints = new List<Vector3>();
+    [SerializeField] private List<GameObject> billboardPrefabs = new List<GameObject>();
+
     private void Start()
     {
         determineBuildingType();
         initializeGeneration();
+        handleBillboardSpawning();
     }
 
     private float calculateDistancerToCenter() => Vector3.Distance(transform.position, NodeEditor.Centroid);
@@ -59,11 +65,35 @@ public class ProceduralBuilding : MonoBehaviour
         return utilityValue;
     }
 
+    private void handleBillboardSpawning()
+    {
+        for (int i = 0; i < availableMiddleStacks.Count; i++)
+        {
+            Transform spawnpointParent = availableMiddleStacks[i].transform.GetChild(0);
+
+            for (int j = 0; j < spawnpointParent.transform.childCount; j++)
+            {
+                Vector3 spawnPos = transform.position + spawnpointParent.GetChild(j).position;
+                billboardSpawnpoints.Add(spawnPos);
+            }
+        }
+
+        int chanceToSpawn = 50;
+
+        for (int i = 0; i < billboardSpawnpoints.Count; i++)
+        {
+            if (Random.value > 0.5)
+            {
+                Instantiate(billboardPrefabs[0], transform.position + billboardSpawnpoints[i], Quaternion.identity);
+            }
+        }
+    }
+
     private void determineBuildingType()
     {
         houseValue = calculateUtilityValue(houseDistanceFactor, houseWeightFactor, -30, 50);
         skyscraperValue = calculateUtilityValue(skyscraperDistanceFactor, -10, 100);
-        
+
         buildingType = houseValue > skyscraperValue ? BuildingType.House : BuildingType.Skyscraper;
     }
 
@@ -83,8 +113,9 @@ public class ProceduralBuilding : MonoBehaviour
             minAmount = 10;
             maxAmount = 30;
         }
+
         maxAmountOfStacks = Random.Range(minAmount, maxAmount);
-        
+
         generateFloor();
         StartCoroutine(generateMiddleStacks());
     }
@@ -109,10 +140,6 @@ public class ProceduralBuilding : MonoBehaviour
         stack.name = "[ FLOOR ]";
         currentAmountOfStacks++;
         spawnedStacks.Add(stack);
-    }
-
-    private static void calculateBuildingType(float pDistanceToCenter, float pDistanceFactor, float pWeightFactor)
-    {
     }
 
     private IEnumerator generateMiddleStacks()

@@ -91,10 +91,15 @@ MonoBehaviour:
   - {fileID: 2971719696473699626, guid: 5526c9ece6d08f74687374eb7bda73ed, type: 3}
   - {fileID: 2982878661349987336, guid: af5377326ada3284e9fde7705afe97b2, type: 3}
   - {fileID: 9142785616934827231, guid: e3d38f739acdca24695965f0f11dd417, type: 3}
-  stackHeight: 2
   middleStacksParent: {fileID: 240110023}
   houseDistanceFactor: 2
   houseWeightFactor: 120
   skyscraperDistanceFactor: 5
   skyscraperWeightFactor: 10
   buildingType: 0
+  distanceToCentroid: 0
+  houseValue: 0
+  skyscraperValue: 0
+  billboardSpawnpoints: []
+  billboardPrefabs:
+  - {fileID: 3121701565955640726, guid: 4962599d2cdf3ad42abcef1d1ab8c1e4, type: 3}
