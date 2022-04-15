@@ -6,10 +6,6 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
-public class Event_TransferNodeData : UnityEvent<List<Node>>
-{
-}
-
 [Serializable]
 public class Event_OnPlaceNode : UnityEvent<Node>
 {
@@ -27,22 +23,17 @@ public class Event_OnResetSelection : UnityEvent
 
 public class NodeEditor : FSM_State
 {
-    public Event_TransferNodeData eventTransferToNewFile { get; } = new Event_TransferNodeData();
-    public Event_TransferNodeData eventTransferToExistingFile { get; } = new Event_TransferNodeData();
     public static Event_OnResetSelection onResetSelection = new Event_OnResetSelection();
-    public static UnityEvent onRecalculateSpawnpoints = new UnityEvent();
     public UnityEvent<List<Node>> eventTransferToRoadGenerator = new UnityEvent<List<Node>>();
 
     private PlayModeStateChange playmodeState;
-    private Camera cam;
-    private Vector3 currentPoint;
     private GameObject nodePrefab;
     private GameObject spawnpointPrefab;
     public static Node_EditModes CurrentMode;
 
     [SerializeField] private Transform spawnpointParent;
     [SerializeField] private Transform nodeParent;
-    [SerializeField] private List<Node> allNodes = new List<Node>();
+    [SerializeField] public List<Node> allNodes = new List<Node>();
     private Node currentlySelectedNode;
     private Node firstNode;
     private Node secondNode;
@@ -50,78 +41,50 @@ public class NodeEditor : FSM_State
 
     private bool currentlyMovingNode;
 
-    private Vector3 CityCentroid;
     private float mostLeft;
     private float mostRight;
     private float mostTop;
     private float mostBottom;
 
     private List<Vector3> outerCorners = new List<Vector3>();
-    public List<Vector3> nodePositions = new List<Vector3>();
-    public List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
+    private List<Vector3> nodePositions = new List<Vector3>();
+    private List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
     [HideInInspector] public Vector3 buildingSize;
     [HideInInspector] public Vector3 buildingOffset;
     public static bool HasCalculatedSpawnpoints;
 
     public static Vector3 Centroid;
+    public static Vector3 TopLeftCorner;
 
     private void Awake()
     {
         PointSelector.onNodeSelect.AddListener(determineAction);
         CityBlockGenerator.onBuildingSettingsChanged.AddListener(updateBuildingSettings);
         GeneratorFSM.broadcastNodeEditModeChange.AddListener(updateEditMode);
-
-        onRecalculateSpawnpoints.AddListener(RecalculateSpawnpoints);
-
+        GeneratorFSM.onClickRegenerateSpawnpoints.AddListener(recalculateSpawnpoints);
+        
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
         spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
     }
 
-    public override void EnterState()
-    {
-        isActive = true;
-    }
+    public override void EnterState() => isActive = true;
+    public override void ExitState() => isActive = false;
 
-    public override void ExitState()
-    {
-        isActive = false;
-    }
-
-    private void updateBuildingSettings(Vector3 pSize, Vector3 pOffset)
-    {
-        buildingSize = pSize;
-        buildingOffset = pOffset;
-    }
-
-    public void RecalculateSpawnpoints()
-    {
-        clearOldData();
-        destroyUnconnectedNodes();
-        calculateOuterCorners();
-        alignOuterNodesToRectangle();
-        createSpawnpoints();
-        
-        Debug.Log(outerCorners.Count);
-
-        HasCalculatedSpawnpoints = true;
-    }
-
-    private void updateEditMode(Node_EditModes pNewMode)
-    {
-        CurrentMode = pNewMode;
-    }
+    private void updateEditMode(Node_EditModes pNewMode) => CurrentMode = pNewMode;
 
     private void Update()
     {
         if (!isActive) return;
-
+        
         if (currentlyMovingNode && Input.GetMouseButtonUp(0))
         {
             currentlyMovingNode = false;
             onResetSelection.Invoke();
             resetNodeSelection();
         }
+        
+        Debug.Log(allNodes.GetHashCode());
     }
 
     private void clearOldData()
@@ -133,24 +96,28 @@ public class NodeEditor : FSM_State
         {
             if (spawnpoint != null) Destroy(spawnpoint.gameObject);
         }
-
+        
         spawnPointsList.Clear();
     }
 
-    public void SaveToFile()
+    public void SaveToFile() => eventTransferToRoadGenerator.Invoke(allNodes);
+
+    private void updateBuildingSettings(Vector3 pSize, Vector3 pOffset)
     {
-        Debug.Log(allNodes.Count);
-        eventTransferToRoadGenerator.Invoke(allNodes);
+        buildingSize = pSize;
+        buildingOffset = pOffset;
     }
 
-    private void transferToNewFile()
+    private void recalculateSpawnpoints()
     {
-        eventTransferToNewFile.Invoke(allNodes);
-    }
-
-    private void transferToExistingFile()
-    {
-        eventTransferToExistingFile.Invoke(allNodes);
+        Debug.Log($"HashCode IN EDITOR {allNodes.GetHashCode()}");
+        clearOldData();
+        destroyUnconnectedNodes();
+        calculateOuterCorners();
+        alignOuterNodesToRectangle();
+        createSpawnpoints();
+        
+        HasCalculatedSpawnpoints = true;
     }
 
     private void determineAction(Node pNode, Vector3 pMousePosition)
@@ -191,15 +158,22 @@ public class NodeEditor : FSM_State
         for (int i = 0; i < allNodes.Count; i++)
         {
             nodePositions.Add(allNodes[i].position);
+            Debug.Log(allNodes[i].position);
         }
+        
+        if(allNodes.Count > 0) Debug.Log($"allNodes count {allNodes.Count}. Index 0: {allNodes[0]}");
+        else Debug.Log("allNodes has no elements");
+        
+        if(nodePositions.Count > 0) Debug.Log($"Node positions count {nodePositions.Count}. Index 0: {nodePositions[0]}");
+        else Debug.Log("NodePositions has no elements");
 
-        CityCentroid = GridHelperClass.GetCentroidOfArea(nodePositions);
+        Centroid = GridHelperClass.GetCentroidOfArea(nodePositions);
 
         //Now the points are still sorted on distance. We want them sorted clockwise based on position, starting top-left.
-        Vector3 currentTopLeft = CityCentroid;
-        Vector3 currentTopRight = CityCentroid;
-        Vector3 currentBottomRight = CityCentroid;
-        Vector3 currentBottomLeft = CityCentroid;
+        Vector3 currentTopLeft = Centroid;
+        Vector3 currentTopRight = Centroid;
+        Vector3 currentBottomRight = Centroid;
+        Vector3 currentBottomLeft = Centroid;
 
         for (int i = 0; i < nodePositions.Count; i++)
         {
@@ -215,14 +189,18 @@ public class NodeEditor : FSM_State
         }
 
         outerCorners = new List<Vector3> {currentTopLeft, currentTopRight, currentBottomRight, currentBottomLeft};
+        TopLeftCorner = currentTopLeft;
+        
+        if(outerCorners.Count > 0) Debug.Log($"outerCorners count {outerCorners.Count}. Index 0: {outerCorners[0]}");
+        else Debug.Log("OuterCorners has no elements");
     }
 
     private void alignOuterNodesToRectangle()
     {
-        mostLeft = CityCentroid.x;
-        mostRight = CityCentroid.x;
-        mostTop = CityCentroid.z;
-        mostBottom = CityCentroid.z;
+        mostLeft = Centroid.x;
+        mostRight = Centroid.x;
+        mostTop = Centroid.z;
+        mostBottom = Centroid.z;
 
         for (int i = 0; i < nodePositions.Count; i++)
         {
@@ -407,10 +385,10 @@ public class NodeEditor : FSM_State
     {
         Gizmos.color = Color.red;
 
-        if (CityCentroid != Vector3.zero)
+        if (Centroid != Vector3.zero)
         {
             Gizmos.color = Color.yellow;
-            Gizmos.DrawSphere(CityCentroid, 4f);
+            Gizmos.DrawSphere(Centroid, 4f);
         }
 
         if (currentlySelectedNode != null)
@@ -422,6 +400,7 @@ public class NodeEditor : FSM_State
         for (int nodeInListIndex = 0; nodeInListIndex < allNodes.Count; nodeInListIndex++)
         {
             Vector3 currentNodePos = allNodes[nodeInListIndex].position;
+            currentNodePos.y += 0.5f;
 
             if (allNodes[nodeInListIndex].connectedNodes.Count == 0) continue;
 
@@ -431,7 +410,7 @@ public class NodeEditor : FSM_State
             {
                 Vector3 connectedNodePos =
                     allNodes[nodeInListIndex].connectedNodes[connectionsInNode].position;
-
+                connectedNodePos.y += 0.5f;
                 Debug.DrawLine(currentNodePos, connectedNodePos);
             }
         }
@@ -454,5 +433,11 @@ public class NodeEditor : FSM_State
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
         }
+    }
+
+    public void DebugList()
+    {
+        Debug.Log($"HashCode in DEBUG METHOD {allNodes.GetHashCode()}");
+        
     }
 }

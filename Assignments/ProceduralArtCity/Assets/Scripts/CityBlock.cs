@@ -11,5 +11,5 @@ public class CityBlock
     public Vector3 centroid;
     public Mesh spawnAreaMesh;
     public List<Spawnpoint> spawnPoints = new List<Spawnpoint>();
-    public List<GameObject> spawnedBuildings = new List<GameObject>();
+    public List<ProceduralBuilding> spawnedBuildings = new List<ProceduralBuilding>();
 }

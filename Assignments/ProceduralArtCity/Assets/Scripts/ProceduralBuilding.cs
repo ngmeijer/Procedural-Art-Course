@@ -16,83 +16,101 @@ public enum BuildingType
 public class ProceduralBuilding : MonoBehaviour
 {
     [SerializeField] [Range(0, 1.5f)] private float buildDelay = 1f;
-    private int currentAmountOfStacks;
     [SerializeField] private int maxAmountOfStacks = 5;
-
-    private List<GameObject> spawnedStacks = new List<GameObject>();
     [SerializeField] private List<GameObject> availableFloorStacks;
     [SerializeField] private List<GameObject> availableMiddleStacks;
     [SerializeField] private List<GameObject> availableRoofStacks;
-    public static float StackHeight;
-
     [SerializeField] private Transform middleStacksParent;
 
     [Header("House values")] [SerializeField]
     private float houseDistanceFactor;
 
     [SerializeField] private float houseWeightFactor;
+    [SerializeField] private float minRandomValue_House = -10;
+    [SerializeField] private float maxRandomValue_House = 70;
+
 
     [Header("Skyscraper values")] [SerializeField]
     private float skyscraperDistanceFactor;
 
     [SerializeField] private float skyscraperWeightFactor;
+    [SerializeField] private float minRandomValue_Skyscraper = -30;
+    [SerializeField] private float maxRandomValue_Skyscraper = 100;
+
+    [SerializeField] private List<Vector3> billboardSpawnpoints = new List<Vector3>();
+
+    [SerializeField] private List<GameObject> billboardPrefabs = new List<GameObject>();
 
     public BuildingType buildingType;
-    private Vector3 bottomPosition;
     public float distanceToCentroid;
     public float houseValue;
     public float skyscraperValue;
+    public Vector3 size;
 
-    [SerializeField] private List<Vector3> billboardSpawnpoints = new List<Vector3>();
-    [SerializeField] private List<GameObject> billboardPrefabs = new List<GameObject>();
+    public static bool EnableBillboards;
+    public static float StackHeight = 1;
+
+    private Vector3 bottomPosition;
+    private float maxDistanceToCenter;
+    private int currentAmountOfStacks;
+    private List<GameObject> spawnedStacks = new List<GameObject>();
 
     private void Start()
     {
+        maxDistanceToCenter = calculateDistanceCenterToCorner();
         determineBuildingType();
         initializeGeneration();
-        handleBillboardSpawning();
     }
 
     private float calculateDistancerToCenter() => Vector3.Distance(transform.position, NodeEditor.Centroid);
+    private float calculateDistanceCenterToCorner() => Vector3.Distance(NodeEditor.Centroid, NodeEditor.TopLeftCorner);
 
     private float calculateUtilityValue(float pDistanceFactor, float pWeightFactor, float pMinRandomValue = 0,
         float pMaxRandomValue = 0)
     {
         distanceToCentroid = calculateDistancerToCenter();
         float randomValue = Random.Range(pMinRandomValue, pMaxRandomValue);
-        float utilityValue = (1 - (distanceToCentroid - 100)) * pDistanceFactor + pWeightFactor + randomValue;
+        float utilityValue = (1 - (distanceToCentroid - maxDistanceToCenter)) * pDistanceFactor + pWeightFactor +
+                             randomValue;
 
         return utilityValue;
     }
 
-    private void handleBillboardSpawning()
+    private void handleBillboardSpawning(Transform pCurrentStack, int pCurrentIndex)
     {
-        for (int i = 0; i < availableMiddleStacks.Count; i++)
+        Transform spawnpointParent = pCurrentStack.GetChild(0);
+        int spawnpointCount = spawnpointParent.childCount;
+        int randomAmount = Random.Range(0, spawnpointCount);
+        List<Vector3> spawnpoints = new List<Vector3>();
+        for (int i = 0; i < spawnpointCount; i++)
         {
-            Transform spawnpointParent = availableMiddleStacks[i].transform.GetChild(0);
-
-            for (int j = 0; j < spawnpointParent.transform.childCount; j++)
-            {
-                Vector3 spawnPos = transform.position + spawnpointParent.GetChild(j).position;
-                billboardSpawnpoints.Add(spawnPos);
-            }
+            Vector3 offset = spawnpointParent.GetChild(i).localPosition;
+            offset.y += StackHeight * pCurrentIndex;
+            Vector3 spawnpoint = transform.position + offset;
+            spawnpoints.Add(spawnpoint);
         }
 
-        int chanceToSpawn = 50;
-
-        for (int i = 0; i < billboardSpawnpoints.Count; i++)
+        for (int i = 0; i < randomAmount; i++)
         {
             if (Random.value > 0.5)
             {
-                Instantiate(billboardPrefabs[0], transform.position + billboardSpawnpoints[i], Quaternion.identity);
+                GameObject billboard =
+                    Instantiate(billboardPrefabs[0], spawnpoints[i], Quaternion.identity, pCurrentStack);
+                Vector3 offset = spawnpoints[i] - transform.position;
+                if (offset.x < 0 || offset.x > 0)
+                {
+                    billboard.transform.Rotate(new Vector3(0, 1, 0), 90f);
+                }
             }
         }
     }
 
     private void determineBuildingType()
     {
-        houseValue = calculateUtilityValue(houseDistanceFactor, houseWeightFactor, -30, 50);
-        skyscraperValue = calculateUtilityValue(skyscraperDistanceFactor, -10, 100);
+        houseValue = calculateUtilityValue(houseDistanceFactor, houseWeightFactor, minRandomValue_House,
+            maxRandomValue_House);
+        skyscraperValue = calculateUtilityValue(skyscraperDistanceFactor, skyscraperWeightFactor,
+            minRandomValue_Skyscraper, maxRandomValue_Skyscraper);
 
         buildingType = houseValue > skyscraperValue ? BuildingType.House : BuildingType.Skyscraper;
     }
@@ -101,8 +119,7 @@ public class ProceduralBuilding : MonoBehaviour
     {
         currentAmountOfStacks = 0;
 
-        int maxAmount = 0;
-        int minAmount = 0;
+        int maxAmount, minAmount;
         if (buildingType == BuildingType.House)
         {
             minAmount = 1;
@@ -118,6 +135,9 @@ public class ProceduralBuilding : MonoBehaviour
 
         generateFloor();
         StartCoroutine(generateMiddleStacks());
+
+        size = new Vector3(spawnedStacks[0].transform.lossyScale.x + 1, StackHeight * maxAmountOfStacks + (3 * StackHeight),
+            spawnedStacks[0].transform.lossyScale.z + 1);
     }
 
     public void RegenerateBuilding()
@@ -154,6 +174,8 @@ public class ProceduralBuilding : MonoBehaviour
         stack.name = $"[ MIDDLE STACK {currentAmountOfStacks} ]";
         spawnedStacks.Add(stack);
 
+        if (EnableBillboards) handleBillboardSpawning(stack.transform, currentAmountOfStacks);
+
         currentAmountOfStacks++;
         if (currentAmountOfStacks < maxAmountOfStacks - 1)
         {
@@ -171,5 +193,14 @@ public class ProceduralBuilding : MonoBehaviour
             bottomPosition + new Vector3(0, StackHeight * currentAmountOfStacks, 0), Quaternion.identity, transform);
         stack.name = "[ ROOF ]";
         spawnedStacks.Add(stack);
+    }
+
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        foreach (var spawnpoint in billboardSpawnpoints)
+        {
+            Gizmos.DrawSphere(spawnpoint, 0.5f);
+        }
     }
 }

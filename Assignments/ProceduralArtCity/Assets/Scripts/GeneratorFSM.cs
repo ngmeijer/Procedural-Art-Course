@@ -28,16 +28,16 @@ public enum FSM_States
     GenerateCityBlocks
 }
 
-
-[ExecuteAlways]
 public class GeneratorFSM : MonoBehaviour
 {
     public static UnityEvent<Node_EditModes> broadcastNodeEditModeChange = new UnityEvent<Node_EditModes>();
     public static UnityEvent<FSM_States> broadcastGenerationModeChange = new UnityEvent<FSM_States>();
 
-    private NodeEditor nodeEditor;
-    private RoadGenerator roadGenerator;
-    private CityBlockGenerator cityBlockGenerator;
+    public static UnityEvent onClickRegenerateSpawnpoints = new UnityEvent();
+    
+    [SerializeField] private NodeEditor nodeEditor;
+    [SerializeField] private RoadGenerator roadGenerator;
+    [SerializeField] private CityBlockGenerator cityBlockGenerator;
     public FSM_State currentGenerator;
     public FSM_States currentState;
     public Node_EditModes currentEditMode = Node_EditModes.NoneSelected;
@@ -46,13 +46,9 @@ public class GeneratorFSM : MonoBehaviour
     public Vector3 buildingSize;
     public Vector3 buildingOffset;
     public float stackHeight;
-
-    private void Awake()
-    {
-        nodeEditor = FindObjectOfType<NodeEditor>();
-        roadGenerator = FindObjectOfType<RoadGenerator>();
-        cityBlockGenerator = FindObjectOfType<CityBlockGenerator>();
-    }
+    public bool enableBillboards;
+    public int selectedBuildingIndex;
+    public int selectedCityBlockIndex;
 
     private void Start()
     {
@@ -66,6 +62,7 @@ public class GeneratorFSM : MonoBehaviour
 
         if (pNewMode != oldEditMode || oldEditMode != Node_EditModes.NoneSelected)
         {
+            Debug.Log("Processing new edit mode");
             currentEditMode = pNewMode;
             broadcastNodeEditModeChange.Invoke(pNewMode);
         }
@@ -73,7 +70,7 @@ public class GeneratorFSM : MonoBehaviour
 
     public void ProcessSpawnpointRegenerationRequest()
     {
-        nodeEditor.RecalculateSpawnpoints();
+        onClickRegenerateSpawnpoints.Invoke();
     }
 
     public void ProcessRoadGenerationRequest()
@@ -131,7 +128,7 @@ public class GeneratorFSM : MonoBehaviour
         broadcastGenerationModeChange.Invoke(currentState);
     }
 
-    private void OnValidate()
+    public void UpdateVariables()
     {
         if (nodeEditor != null)
         {
@@ -139,6 +136,13 @@ public class GeneratorFSM : MonoBehaviour
             nodeEditor.buildingOffset = buildingOffset;
         }
 
-        ProceduralBuilding.StackHeight = stackHeight;
+        if (cityBlockGenerator != null)
+        {
+            cityBlockGenerator.selectedCityBlockIndex = selectedCityBlockIndex;
+            cityBlockGenerator.selectedBuildingIndex = selectedBuildingIndex;
+        }
+
+        if(stackHeight != 0) ProceduralBuilding.StackHeight = stackHeight;
+        ProceduralBuilding.EnableBillboards = enableBillboards;
     }
 }

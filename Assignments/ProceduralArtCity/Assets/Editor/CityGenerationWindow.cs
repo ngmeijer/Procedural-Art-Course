@@ -19,14 +19,18 @@ public class CityGenerationWindow : EditorWindow
     private bool showNodeEditor;
     private bool showRoadEditor;
     private bool showCityBlockEditor;
+    private bool showBuildingEditor;
     private Vector3 buildingSize = new Vector3(5, 0, 5);
     private Vector3 buildingOffset = new Vector3(3,0,3);
-    private float stackHeight = 3;
+    private float stackHeight = 1f;
     private Vector2 stackHeightLimits = new Vector2(0, 10);
     private float houseDistanceFactor = 2;
     private float houseWeightFactor = 120;
     private float skyscraperDistanceFactor = 5;
     private float skyscraperWeightFactor = 10;
+    private bool enableBillboards;
+    private int selectedBuildingIndex;
+    private int selectedCityBlockIndex;
 
     [MenuItem("Window/City Generator")]
     public static void ShowWindow()
@@ -39,6 +43,8 @@ public class CityGenerationWindow : EditorWindow
     {
         generator = FindObjectOfType<GeneratorFSM>();
         OnValidate();
+
+        stackHeight = 2f;
     }
 
     private void createGUIStyles()
@@ -72,8 +78,6 @@ public class CityGenerationWindow : EditorWindow
     private void OnGUI()
     {
         createGUIStyles();
-
-        handleGeneralGUI();
         
         GUILayout.Space(20);
         handleNodeGUI();
@@ -81,12 +85,10 @@ public class CityGenerationWindow : EditorWindow
         handleRoadGUI();
         GUILayout.Space(40);
         handleCityBlockGUI();
-
+        GUILayout.Space(40);
+        handleBuildingSpecificGUI();
+        
         if (GUI.changed) OnValidate();
-    }
-
-    private void handleGeneralGUI()
-    {
     }
 
     private void handleNodeGUI()
@@ -180,7 +182,7 @@ public class CityGenerationWindow : EditorWindow
         {
             GUILayout.Space(10);
             
-            prepareBuildingSettings();
+            prepareCityBlockSettings();
             
             GUILayout.Space(40);
 
@@ -206,9 +208,11 @@ public class CityGenerationWindow : EditorWindow
         GUILayout.EndHorizontal();
     }
 
-    private void prepareBuildingSettings()
+    private void prepareCityBlockSettings()
     {
-        GUILayout.Label("Building settings", subHeaderStyle, GUILayout.Height(30));
+        GUILayout.Label("City Block settings", subHeaderStyle, GUILayout.Height(30));
+        GUILayout.Label("These settings will be applied to all buildings in the current city block.", paragraphStyle, GUILayout.Height(30));
+
         GUILayout.Space(10);
         GUILayout.BeginHorizontal();
 
@@ -267,6 +271,24 @@ public class CityGenerationWindow : EditorWindow
         skyscraperWeightFactor = EditorGUILayout.FloatField(skyscraperWeightFactor, GUILayout.Height(20));
         
         GUILayout.EndHorizontal();
+        
+        GUILayout.Space(20);
+        
+        enableBillboards = EditorGUILayout.Toggle("Skyscraper billboards", enableBillboards);
+    }
+    
+    private void handleBuildingSpecificGUI()
+    {
+        showBuildingEditor = EditorGUILayout.Foldout(showBuildingEditor, "Building editing", true, foldoutStyle);
+
+        if (showBuildingEditor)
+        {
+            EditorGUILayout.LabelField("Selected city block index", GUILayout.Width(150), GUILayout.Height(20));
+            selectedCityBlockIndex = EditorGUILayout.IntSlider(selectedCityBlockIndex, 0, 10);
+            
+            EditorGUILayout.LabelField("Selected building index", GUILayout.Width(150), GUILayout.Height(20));
+            selectedBuildingIndex = EditorGUILayout.IntSlider(selectedBuildingIndex, 0, 10);
+        }
     }
 
     private void OnValidate()
@@ -276,5 +298,9 @@ public class CityGenerationWindow : EditorWindow
         generator.buildingOffset = new Vector3(buildingOffset.x, 0f, buildingOffset.z);
 
         generator.stackHeight = stackHeight;
+        generator.enableBillboards = enableBillboards;
+        generator.selectedCityBlockIndex = selectedCityBlockIndex;
+        generator.selectedBuildingIndex = selectedBuildingIndex;
+        generator.UpdateVariables();
     }
 }

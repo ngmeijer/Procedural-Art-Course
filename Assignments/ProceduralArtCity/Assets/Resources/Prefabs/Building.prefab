@@ -43,7 +43,7 @@ GameObject:
   m_Layer: 0
   m_Name: Building
   m_TagString: Untagged
-  m_Icon: {fileID: 0}
+  m_Icon: {fileID: -1412012063857583412, guid: 0000000000000000d000000000000000, type: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
@@ -96,10 +96,14 @@ MonoBehaviour:
   houseWeightFactor: 120
   skyscraperDistanceFactor: 5
   skyscraperWeightFactor: 10
+  billboardSpawnpoints: []
+  billboardPrefabs:
+  - {fileID: 3121701565955640726, guid: 4962599d2cdf3ad42abcef1d1ab8c1e4, type: 3}
+  minRandomValue_House: -10
+  maxRandomValue_House: 70
+  minRandomValue_Skyscraper: -30
+  maxRandomValue_Skyscraper: 100
   buildingType: 0
   distanceToCentroid: 0
   houseValue: 0
   skyscraperValue: 0
-  billboardSpawnpoints: []
-  billboardPrefabs:
-  - {fileID: 3121701565955640726, guid: 4962599d2cdf3ad42abcef1d1ab8c1e4, type: 3}

@@ -15,7 +15,7 @@ public class CityBlockGenerator : FSM_State
 {
     public static Event_OnBuildingSettingsChanged onBuildingSettingsChanged = new Event_OnBuildingSettingsChanged();
     [SerializeField] private List<CityBlock> cityBlocksData = new List<CityBlock>();
-    private int currentSelectedIndex = -1;
+    private int currentSelectedCityBlock = -1;
     private Vector3 currentCentroidPoint;
     
     private Dictionary<int, Vector3> planeClosestVertices = new Dictionary<int, Vector3>();
@@ -23,7 +23,9 @@ public class CityBlockGenerator : FSM_State
     private bool currentlyEditingBlock;
     private Transform cityBlockParent;
     public BuildingType currentPreferredBuildingType;
-    
+    public int selectedBuildingIndex = -1;
+    public int selectedCityBlockIndex = -1;
+
     private void Awake()
     {
         PointSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
@@ -52,12 +54,12 @@ public class CityBlockGenerator : FSM_State
         if (!currentlyEditingBlock) return;
         findCentroidOfBlock();
         
-        CityBlock currentBlock = cityBlocksData[currentSelectedIndex];
+        CityBlock currentBlock = cityBlocksData[currentSelectedCityBlock];
 
         for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
         {
             GameObject building = Instantiate(buildingContainer, currentBlock.spawnPoints[i].position, Quaternion.identity, currentBlock.parent);
-            currentBlock.spawnedBuildings.Add(building);
+            currentBlock.spawnedBuildings.Add(building.GetComponent<ProceduralBuilding>());
         }
 
         currentPreferredBuildingType = BuildingType.NoPreference;
@@ -70,20 +72,20 @@ public class CityBlockGenerator : FSM_State
         
         CityBlock cityBlock = new CityBlock();
         cityBlocksData.Add(cityBlock);
-        currentSelectedIndex++;
+        currentSelectedCityBlock++;
         currentlyEditingBlock = true;
         Transform cityBlockBuildingParent = new GameObject().transform;
         cityBlockBuildingParent.parent = transform;
-        cityBlockBuildingParent.name = $"[BLOCK {currentSelectedIndex}] building parent";
+        cityBlockBuildingParent.name = $"[BLOCK {currentSelectedCityBlock}] building parent";
         cityBlock.parent = cityBlockBuildingParent;
         cityBlockParent = cityBlockBuildingParent;
     }
 
     public void DiscardCurrentCityBlock()
     {
-        cityBlocksData[currentSelectedIndex] = null;
-        cityBlocksData.RemoveAt(currentSelectedIndex);
-        currentSelectedIndex--;
+        cityBlocksData[currentSelectedCityBlock] = null;
+        cityBlocksData.RemoveAt(currentSelectedCityBlock);
+        currentSelectedCityBlock--;
     }
 
     private void addNodeToCityBlockCorners(Node pNode, Vector3 pMousePosition)
@@ -91,8 +93,8 @@ public class CityBlockGenerator : FSM_State
         if (!isActive) return;
         if (pNode == null) return;
 
-        if (!cityBlocksData[currentSelectedIndex].outerCorners.Contains(pNode.position))
-            cityBlocksData[currentSelectedIndex].outerCorners.Add(pNode.position);
+        if (!cityBlocksData[currentSelectedCityBlock].outerCorners.Contains(pNode.position))
+            cityBlocksData[currentSelectedCityBlock].outerCorners.Add(pNode.position);
     }
 
     private void determineSpawnpointAction(Spawnpoint pSpawnpoint, Vector3 pMousePos, SpawnpointSelection pSelectionMode)
@@ -104,24 +106,24 @@ public class CityBlockGenerator : FSM_State
         switch (pSelectionMode)
         {
             case SpawnpointSelection.Select:
-                if (!cityBlocksData[currentSelectedIndex].spawnPoints.Contains(pSpawnpoint))
-                    cityBlocksData[currentSelectedIndex].spawnPoints.Add(pSpawnpoint);
+                if (!cityBlocksData[currentSelectedCityBlock].spawnPoints.Contains(pSpawnpoint))
+                    cityBlocksData[currentSelectedCityBlock].spawnPoints.Add(pSpawnpoint);
                 break;
             case SpawnpointSelection.Deselect:
-                if (cityBlocksData[currentSelectedIndex].spawnPoints.Contains(pSpawnpoint))
-                    cityBlocksData[currentSelectedIndex].spawnPoints.Remove(pSpawnpoint);
+                if (cityBlocksData[currentSelectedCityBlock].spawnPoints.Contains(pSpawnpoint))
+                    cityBlocksData[currentSelectedCityBlock].spawnPoints.Remove(pSpawnpoint);
                 break;
         }
     }
 
     private void findCentroidOfBlock()
     {
-        List<Vector3> outerCorners = cityBlocksData[currentSelectedIndex].outerCorners;
+        List<Vector3> outerCorners = cityBlocksData[currentSelectedCityBlock].outerCorners;
 
         currentCentroidPoint = GridHelperClass.GetCentroidOfArea(outerCorners);
 
-        cityBlocksData[currentSelectedIndex].centroid = currentCentroidPoint;
-        cityBlocksData[currentSelectedIndex].parent.position = currentCentroidPoint;
+        cityBlocksData[currentSelectedCityBlock].centroid = currentCentroidPoint;
+        cityBlocksData[currentSelectedCityBlock].parent.position = currentCentroidPoint;
     }
 
     private void OnDrawGizmos()
@@ -139,13 +141,26 @@ public class CityBlockGenerator : FSM_State
         for (int i = 0; i < cityBlocksData.Count; i++)
         {
             Gizmos.color = Color.yellow;
-
             Vector3 centroid = cityBlocksData[i].centroid;
             Mesh spawnAreaMesh = cityBlocksData[i].spawnAreaMesh;
 
             if (centroid != Vector3.zero) Gizmos.DrawWireSphere(centroid, 2f);
             Gizmos.color = Color.cyan;
             if (spawnAreaMesh != null) Gizmos.DrawMesh(spawnAreaMesh, centroid, Quaternion.identity);
+        }
+
+        if (selectedCityBlockIndex > -1 && cityBlocksData.Count > 0)
+        {
+            if (selectedBuildingIndex > -1 && cityBlocksData[selectedCityBlockIndex].spawnedBuildings.Count > 0)
+            {
+                Gizmos.color = Color.green;
+
+                ProceduralBuilding currentBuilding =
+                    cityBlocksData[selectedCityBlockIndex].spawnedBuildings[selectedBuildingIndex];
+                
+                Vector3 buildingPosition = currentBuilding.gameObject.transform.position;
+                Gizmos.DrawWireCube(buildingPosition, currentBuilding.size);
+            }
         }
     }
 }
