@@ -50,8 +50,8 @@ public class NodeEditor : FSM_State
     private List<Vector3> nodePositions = new List<Vector3>();
     private List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
-    [HideInInspector] public Vector3 buildingSize;
-    [HideInInspector] public Vector3 buildingOffset;
+    public Vector3 buildingSize;
+    public Vector3 buildingOffset;
     public static bool HasCalculatedSpawnpoints;
 
     public static Vector3 Centroid;
@@ -83,8 +83,6 @@ public class NodeEditor : FSM_State
             onResetSelection.Invoke();
             resetNodeSelection();
         }
-        
-        Debug.Log(allNodes.GetHashCode());
     }
 
     private void clearOldData()
@@ -110,7 +108,6 @@ public class NodeEditor : FSM_State
 
     private void recalculateSpawnpoints()
     {
-        Debug.Log($"HashCode IN EDITOR {allNodes.GetHashCode()}");
         clearOldData();
         destroyUnconnectedNodes();
         calculateOuterCorners();
@@ -158,7 +155,6 @@ public class NodeEditor : FSM_State
         for (int i = 0; i < allNodes.Count; i++)
         {
             nodePositions.Add(allNodes[i].position);
-            Debug.Log(allNodes[i].position);
         }
         
         if(allNodes.Count > 0) Debug.Log($"allNodes count {allNodes.Count}. Index 0: {allNodes[0]}");
@@ -435,9 +431,8 @@ public class NodeEditor : FSM_State
         }
     }
 
-    public void DebugList()
+    public void UpdateVariables()
     {
-        Debug.Log($"HashCode in DEBUG METHOD {allNodes.GetHashCode()}");
-        
+        Debug.Log(buildingSize);
     }
 }

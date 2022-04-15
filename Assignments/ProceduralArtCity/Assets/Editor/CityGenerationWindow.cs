@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using UnityEditor;
 using UnityEngine;
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
 public class CityGenerationWindow : EditorWindow
 {
     private GeneratorFSM generator;
@@ -293,14 +295,15 @@ public class CityGenerationWindow : EditorWindow
 
     private void OnValidate()
     {
-        if (generator == null) return;
+        if (generator == null) generator = FindObjectOfType<GeneratorFSM>();
         generator.buildingSize = new Vector3(buildingSize.x, 0f, buildingSize.z);
         generator.buildingOffset = new Vector3(buildingOffset.x, 0f, buildingOffset.z);
-
+        
         generator.stackHeight = stackHeight;
         generator.enableBillboards = enableBillboards;
         generator.selectedCityBlockIndex = selectedCityBlockIndex;
         generator.selectedBuildingIndex = selectedBuildingIndex;
+        
         generator.UpdateVariables();
     }
 }

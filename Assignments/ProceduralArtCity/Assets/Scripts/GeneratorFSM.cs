@@ -28,6 +28,7 @@ public enum FSM_States
     GenerateCityBlocks
 }
 
+[ExecuteAlways]
 public class GeneratorFSM : MonoBehaviour
 {
     public static UnityEvent<Node_EditModes> broadcastNodeEditModeChange = new UnityEvent<Node_EditModes>();
@@ -62,7 +63,6 @@ public class GeneratorFSM : MonoBehaviour
 
         if (pNewMode != oldEditMode || oldEditMode != Node_EditModes.NoneSelected)
         {
-            Debug.Log("Processing new edit mode");
             currentEditMode = pNewMode;
             broadcastNodeEditModeChange.Invoke(pNewMode);
         }

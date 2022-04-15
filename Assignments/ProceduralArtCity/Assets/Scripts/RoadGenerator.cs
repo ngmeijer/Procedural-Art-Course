@@ -18,11 +18,7 @@ public class RoadGenerator : FSM_State
 
     public override void ExitState() => isActive = false;
 
-    public void ReceiveNodeData(List<Node> pNodes)
-    {
-        allNodes = pNodes;
-        Debug.Log($"Receiving node data. Test: {pNodes[1]}");
-    } 
+    public void ReceiveNodeData(List<Node> pNodes) => allNodes = pNodes;
 
     public void InitializeRoads()
     {
