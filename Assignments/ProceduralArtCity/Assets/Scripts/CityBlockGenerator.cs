@@ -29,36 +29,33 @@ public class CityBlockGenerator : FSM_State
 {
     public static Event_OnBuildingSettingsChanged onBuildingSettingsChanged = new Event_OnBuildingSettingsChanged();
     [SerializeField] private List<CityBlock> cityBlocksData = new List<CityBlock>();
-    public int CityBlockCount;
-    public int BuildingCount;
-    public int StackCount;
-    public int StackPrefabCount;
-    private int blockInEditMode = -1;
+    [SerializeField] private List<GameObject> availableSkyscrapers;
+    [SerializeField] private List<GameObject> availableHouses;
+    private CityBlock newCityBlock;
     private Vector3 currentCentroidPoint;
 
-    private Dictionary<int, Vector3> planeClosestVertices = new Dictionary<int, Vector3>();
     private bool currentlyEditingBlock;
-    private Transform cityBlockParent;
     private float currentHouseValue;
     private float currentSkyscraperValue;
     private float maxDistanceToCenter;
     private CityBlock editorSelectedCityBlock;
     private ProceduralBuilding editorSelectedBuilding;
     private GameObject editorSelectedStack;
-
+    
+    [HideInInspector] public int CityBlockCount;
+    [HideInInspector] public int BuildingCount;
+    [HideInInspector] public int StackCount;
+    [HideInInspector] public int StackPrefabCount;
     [HideInInspector] public int selectedBuildingIndex;
     [HideInInspector] public int selectedCityBlockIndex;
-    public int selectedNewStackPrefabIndex;
-    public int selectedStackIndex;
+    [HideInInspector] public int selectedNewStackPrefabIndex;
+    [HideInInspector] public int selectedStackIndex;
 
-    [SerializeField] private List<GameObject> availableSkyscrapers;
-    [SerializeField] private List<GameObject> availableHouses;
     private BuildingType currentBuildingType;
     public UtilitySettings utilitySettings;
 
     private void Awake()
     {
-        PointSelector.onNodeSelect.AddListener(addNodeToCityBlockCorners);
         PointSelector.onSpawnpointSelect.AddListener(determineSpawnpointAction);
     }
 
@@ -76,9 +73,15 @@ public class CityBlockGenerator : FSM_State
     {
         if (!isActive) return;
 
-        if (cityBlocksData.Count > 0 && selectedCityBlockIndex >= 0)
+        if (cityBlocksData.Count > 0 && selectedCityBlockIndex >= 0 && selectedCityBlockIndex < cityBlocksData.Count)
             editorSelectedCityBlock = cityBlocksData[selectedCityBlockIndex];
 
+        selectBuilding();
+        selectStack();
+    }
+
+    private void selectBuilding()
+    {
         if (editorSelectedCityBlock != null)
         {
             if (selectedBuildingIndex >= 0 && selectedBuildingIndex < editorSelectedCityBlock.spawnedBuildings.Count)
@@ -86,7 +89,10 @@ public class CityBlockGenerator : FSM_State
 
             BuildingCount = editorSelectedCityBlock.spawnedBuildings.Count;
         }
+    }
 
+    private void selectStack()
+    {
         if (editorSelectedBuilding != null)
         {
             StackCount = editorSelectedBuilding.spawnedStacks.Count;
@@ -118,12 +124,10 @@ public class CityBlockGenerator : FSM_State
     public void FillCityBlock()
     {
         if (!currentlyEditingBlock) return;
-
-        CityBlock currentBlock = cityBlocksData[blockInEditMode];
-
+        
         maxDistanceToCenter = calculateMaxDistance();
 
-        for (int i = 0; i < currentBlock.spawnPoints.Count; i++)
+        for (int i = 0; i < newCityBlock.spawnPoints.Count; i++)
         {
             GameObject selectedBuilding = chooseRandomBuilding();
 
@@ -134,14 +138,14 @@ public class CityBlockGenerator : FSM_State
                 return;
             }
 
-            GameObject building = Instantiate(selectedBuilding, currentBlock.spawnPoints[i].position,
-                Quaternion.identity, currentBlock.parent);
+            GameObject building = Instantiate(selectedBuilding, newCityBlock.spawnPoints[i].position,
+                Quaternion.identity, newCityBlock.parent);
 
             ProceduralBuilding buildingScript = building.GetComponent<ProceduralBuilding>();
             buildingScript.buildingType = currentBuildingType;
             buildingScript.utilityValueHouse = currentHouseValue;
             buildingScript.utilityValueSkyscraper = currentSkyscraperValue;
-            currentBlock.spawnedBuildings.Add(buildingScript);
+            newCityBlock.spawnedBuildings.Add(buildingScript);
         }
 
         currentlyEditingBlock = false;
@@ -178,21 +182,19 @@ public class CityBlockGenerator : FSM_State
 
         CityBlock cityBlock = new CityBlock();
         cityBlocksData.Add(cityBlock);
-        blockInEditMode++;
         currentlyEditingBlock = true;
         Transform cityBlockBuildingParent = new GameObject().transform;
         cityBlockBuildingParent.parent = transform;
-        cityBlockBuildingParent.name = $"[BLOCK {blockInEditMode}] building parent";
+        cityBlockBuildingParent.name = $"[BLOCK {CityBlockCount}] building parent";
         cityBlock.parent = cityBlockBuildingParent;
-        cityBlockParent = cityBlockBuildingParent;
         CityBlockCount++;
+        newCityBlock = cityBlock;
     }
 
     public void DiscardCurrentCityBlock()
     {
-        cityBlocksData[blockInEditMode] = null;
-        cityBlocksData.RemoveAt(blockInEditMode);
-        blockInEditMode--;
+        newCityBlock = null;
+        cityBlocksData.Remove(newCityBlock);
         CityBlockCount--;
     }
 
@@ -200,7 +202,7 @@ public class CityBlockGenerator : FSM_State
     {
         foreach (var buildingData in editorSelectedCityBlock.spawnedBuildings)
         {
-            Destroy(buildingData.gameObject);
+            if(buildingData != null) Destroy(buildingData.gameObject);
         }
 
         cityBlocksData.Remove(editorSelectedCityBlock);
@@ -222,16 +224,18 @@ public class CityBlockGenerator : FSM_State
         destroyIndexSelectedCityBlockBuildings();
         deselectIndexSelectedCityBlockSpawnpoints();
         CityBlockCount--;
+        selectedCityBlockIndex = 0;
     }
 
     public void ReplaceBuildingStack()
     {
-        if(editorSelectedBuilding != null) editorSelectedBuilding.ReplaceStack(selectedStackIndex, selectedNewStackPrefabIndex);
+        if (editorSelectedBuilding != null)
+            editorSelectedBuilding.ReplaceStack(selectedStackIndex, selectedNewStackPrefabIndex);
     }
 
     public void RegenerateBuilding()
     {
-        if(editorSelectedBuilding != null) editorSelectedBuilding.RegenerateBuilding();
+        if (editorSelectedBuilding != null) editorSelectedBuilding.RegenerateBuilding();
     }
 
     private BuildingType determineBuildingType()
@@ -261,15 +265,6 @@ public class CityBlockGenerator : FSM_State
         return utilityValue;
     }
 
-    private void addNodeToCityBlockCorners(Node pNode, Vector3 pMousePosition)
-    {
-        if (!isActive) return;
-        if (pNode == null) return;
-
-        if (!cityBlocksData[blockInEditMode].outerCorners.Contains(pNode.position))
-            cityBlocksData[blockInEditMode].outerCorners.Add(pNode.position);
-    }
-
     private void determineSpawnpointAction(Spawnpoint pSpawnpoint, Vector3 pMousePos,
         SpawnpointSelection pSelectionMode)
     {
@@ -280,28 +275,18 @@ public class CityBlockGenerator : FSM_State
         switch (pSelectionMode)
         {
             case SpawnpointSelection.Select:
-                if (!cityBlocksData[blockInEditMode].spawnPoints.Contains(pSpawnpoint))
-                    cityBlocksData[blockInEditMode].spawnPoints.Add(pSpawnpoint);
+                if (!newCityBlock.spawnPoints.Contains(pSpawnpoint))
+                    newCityBlock.spawnPoints.Add(pSpawnpoint);
                 break;
             case SpawnpointSelection.Deselect:
-                if (cityBlocksData[blockInEditMode].spawnPoints.Contains(pSpawnpoint))
-                    cityBlocksData[blockInEditMode].spawnPoints.Remove(pSpawnpoint);
+                if (newCityBlock.spawnPoints.Contains(pSpawnpoint))
+                    newCityBlock.spawnPoints.Remove(pSpawnpoint);
                 break;
         }
     }
 
     private void OnDrawGizmos()
     {
-        Gizmos.color = Color.magenta;
-        if (planeClosestVertices.Count != 0)
-        {
-            foreach (KeyValuePair<int, Vector3> vertex in planeClosestVertices)
-            {
-                Gizmos.DrawSphere(vertex.Value, 0.5F);
-                Handles.Label(vertex.Value, $"index: {vertex.Key}");
-            }
-        }
-
         for (int i = 0; i < cityBlocksData.Count; i++)
         {
             Gizmos.color = Color.yellow;
