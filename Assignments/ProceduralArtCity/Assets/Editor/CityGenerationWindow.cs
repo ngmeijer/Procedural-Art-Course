@@ -26,14 +26,23 @@ public class CityGenerationWindow : EditorWindow
     private Vector3 buildingOffset = new Vector3(3,0,3);
     private float stackHeight = 1f;
     private Vector2 stackHeightLimits = new Vector2(0, 10);
-    private float houseDistanceFactor = 2;
-    private float houseWeightFactor = 120;
-    private float skyscraperDistanceFactor = 5;
-    private float skyscraperWeightFactor = 10;
     private bool enableBillboards;
     private int selectedBuildingIndex;
     private int selectedCityBlockIndex;
-
+    private int selectedStackIndex;
+    private int selectedNewStackPrefabIndex;
+    private UtilitySettings utilitySettings = new UtilitySettings()
+    {
+        HouseWeightFactor = 5,
+        HouseDistanceFactor = 10,
+        
+        SkyscraperWeightFactor = 2,
+        SkyScraperDistanceFactor = 3,
+        
+        MinRandomValue = -10,
+        MaxRandomValue = 10
+    };
+    
     [MenuItem("Window/City Generator")]
     public static void ShowWindow()
     {
@@ -45,8 +54,6 @@ public class CityGenerationWindow : EditorWindow
     {
         generator = FindObjectOfType<GeneratorFSM>();
         OnValidate();
-
-        stackHeight = 2f;
     }
 
     private void createGUIStyles()
@@ -165,6 +172,8 @@ public class CityGenerationWindow : EditorWindow
 
     private void handleRoadGUI()
     {
+        GUI.backgroundColor = Color.white;
+
         showRoadEditor = EditorGUILayout.Foldout(showRoadEditor, "Road editing", true, foldoutStyle);
 
         if (showRoadEditor)
@@ -178,6 +187,8 @@ public class CityGenerationWindow : EditorWindow
 
     private void handleCityBlockGUI()
     {
+        GUI.backgroundColor = Color.white;
+
         showCityBlockEditor = EditorGUILayout.Foldout(showCityBlockEditor, "City block editing", true, foldoutStyle);
 
         if (showCityBlockEditor)
@@ -206,6 +217,10 @@ public class CityGenerationWindow : EditorWindow
         GUI.backgroundColor = Color.red;
         if (GUILayout.Button("Discard current \ncity block", buttonStyle, GUILayout.Height(50)))
             generator.ProcessCityBlockActionRequest(CityBlockActions.Discard);
+
+        GUI.backgroundColor = Color.magenta;
+        if (GUILayout.Button("Destroy index-selected \ncity block", buttonStyle, GUILayout.Height(50)))
+            generator.ProcessCityBlockActionRequest(CityBlockActions.Destroy);
 
         GUILayout.EndHorizontal();
     }
@@ -248,48 +263,67 @@ public class CityGenerationWindow : EditorWindow
         
         GUILayout.Space(30);
         
-        buildingType = (BuildingType) EditorGUILayout.EnumPopup("Building type:", buildingType);
-        generator.ProcessCityBlockPreferredBuildingType(buildingType);
         GUILayout.Space(5);
 
         GUILayout.BeginHorizontal();
+        GUILayout.BeginVertical();
         
-        EditorGUILayout.LabelField("House distance factor", GUILayout.Width(120), GUILayout.Height(20));
-        houseDistanceFactor = EditorGUILayout.FloatField(houseDistanceFactor, GUILayout.Height(20));
+        EditorGUILayout.LabelField("House distance factor", GUILayout.Width(150), GUILayout.Height(20));
+        utilitySettings.HouseDistanceFactor = EditorGUILayout.FloatField(utilitySettings.HouseDistanceFactor, GUILayout.Height(20));
 
         EditorGUILayout.LabelField("House weight factor", GUILayout.Width(120), GUILayout.Height(20));
-        houseWeightFactor = EditorGUILayout.FloatField(houseWeightFactor, GUILayout.Height(20));
+        utilitySettings.HouseWeightFactor = EditorGUILayout.FloatField(utilitySettings.HouseWeightFactor, GUILayout.Height(20));
         
-        GUILayout.EndHorizontal();
-        
-        GUILayout.Space(5);
-        
-        GUILayout.BeginHorizontal();
-        
-        EditorGUILayout.LabelField("Skyscraper distance factor", GUILayout.Width(155), GUILayout.Height(20));
-        skyscraperDistanceFactor = EditorGUILayout.FloatField(skyscraperDistanceFactor, GUILayout.Height(20));
-
-        EditorGUILayout.LabelField("Skyscraper weight factor", GUILayout.Width(150), GUILayout.Height(20));
-        skyscraperWeightFactor = EditorGUILayout.FloatField(skyscraperWeightFactor, GUILayout.Height(20));
-        
-        GUILayout.EndHorizontal();
+        GUILayout.EndVertical();
         
         GUILayout.Space(20);
         
-        enableBillboards = EditorGUILayout.Toggle("Skyscraper billboards", enableBillboards);
+        GUILayout.BeginVertical();
+        
+        EditorGUILayout.LabelField("Skyscraper distance factor", GUILayout.Width(155), GUILayout.Height(20));
+        utilitySettings.SkyScraperDistanceFactor = EditorGUILayout.FloatField(utilitySettings.SkyScraperDistanceFactor, GUILayout.Height(20));
+
+        EditorGUILayout.LabelField("Skyscraper weight factor", GUILayout.Width(150), GUILayout.Height(20));
+        utilitySettings.SkyscraperWeightFactor = EditorGUILayout.FloatField(utilitySettings.SkyscraperWeightFactor, GUILayout.Height(20));
+        
+        GUILayout.EndVertical();
+        GUILayout.EndHorizontal();
     }
     
     private void handleBuildingSpecificGUI()
     {
+        GUI.backgroundColor = Color.white;
+
         showBuildingEditor = EditorGUILayout.Foldout(showBuildingEditor, "Building editing", true, foldoutStyle);
 
         if (showBuildingEditor)
         {
             EditorGUILayout.LabelField("Selected city block index", GUILayout.Width(150), GUILayout.Height(20));
-            selectedCityBlockIndex = EditorGUILayout.IntSlider(selectedCityBlockIndex, 0, 10);
+            selectedCityBlockIndex = EditorGUILayout.IntSlider(selectedCityBlockIndex, -1, generator.CityBlockCount - 1);
             
             EditorGUILayout.LabelField("Selected building index", GUILayout.Width(150), GUILayout.Height(20));
-            selectedBuildingIndex = EditorGUILayout.IntSlider(selectedBuildingIndex, 0, 10);
+            selectedBuildingIndex = EditorGUILayout.IntSlider(selectedBuildingIndex, -1, generator.BuildingCount - 1);
+            
+            EditorGUILayout.LabelField("Selected stack index", GUILayout.Width(150), GUILayout.Height(20));
+            selectedStackIndex = EditorGUILayout.IntSlider(selectedStackIndex, -1, generator.StackCount - 1);
+            
+            EditorGUILayout.LabelField("Selected new stack prefab index", GUILayout.Width(185), GUILayout.Height(20));
+            selectedNewStackPrefabIndex = EditorGUILayout.IntSlider(selectedNewStackPrefabIndex, -1, generator.StackPrefabCount - 1);
+            
+            GUILayout.Space(10);
+            
+            GUILayout.BeginHorizontal();
+            GUI.backgroundColor = Color.green;
+            if (GUILayout.Button("Regenerate building", buttonStyle, GUILayout.Height(50)))
+            {
+                generator.ProcessCityBlockActionRequest(CityBlockActions.RegenerateBuilding);
+            }
+            GUI.backgroundColor = Color.cyan;
+            if (GUILayout.Button("Confirm new stack", buttonStyle, GUILayout.Height(50)))
+            {
+                generator.ProcessCityBlockActionRequest(CityBlockActions.ReplaceStack);
+            }
+            GUILayout.EndHorizontal();
         }
     }
 
@@ -300,9 +334,11 @@ public class CityGenerationWindow : EditorWindow
         generator.buildingOffset = new Vector3(buildingOffset.x, 0f, buildingOffset.z);
         
         generator.stackHeight = stackHeight;
-        generator.enableBillboards = enableBillboards;
         generator.selectedCityBlockIndex = selectedCityBlockIndex;
         generator.selectedBuildingIndex = selectedBuildingIndex;
+        generator.utilitySettings = utilitySettings;
+        generator.selectedStackIndex = selectedStackIndex;
+        generator.selectedNewStackPrefabIndex = selectedNewStackPrefabIndex;
         
         generator.UpdateVariables();
     }

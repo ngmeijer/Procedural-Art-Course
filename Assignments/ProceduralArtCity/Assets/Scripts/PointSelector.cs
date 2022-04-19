@@ -35,7 +35,6 @@ public class PointSelector : MonoBehaviour
     public static Event_OnSelectSpawnpoint onSpawnpointSelect = new Event_OnSelectSpawnpoint();
     private ClickablePoint currentSelectedPointType;
     private SpawnpointSelection spawnpointSelectionMode;
-    private Color originalSpawnpointColor;
 
     void Start()
     {
@@ -122,16 +121,9 @@ public class PointSelector : MonoBehaviour
 
         if (currentlySelectedSpawnpoint != null)
         {
-            MeshRenderer renderer = pHit.collider.gameObject.GetComponent<MeshRenderer>();
-            if (spawnpointSelectionMode == SpawnpointSelection.Select)
-            {
-                renderer.material.color = Color.red;
-            }
-
-            if (spawnpointSelectionMode == SpawnpointSelection.Deselect)
-            {
-                renderer.material.color = originalSpawnpointColor;
-            }
+            if(spawnpointSelectionMode == SpawnpointSelection.Select)
+                currentlySelectedSpawnpoint.ChangeToSelectionColour();
+            else currentlySelectedSpawnpoint.ResetToDefaultColour();
         }
 
         onSpawnpointSelect.Invoke(currentlySelectedSpawnpoint, mousePositionOnGround, spawnpointSelectionMode);

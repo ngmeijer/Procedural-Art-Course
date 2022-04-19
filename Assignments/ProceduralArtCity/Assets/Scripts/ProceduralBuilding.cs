@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
+using Unity.Mathematics;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -16,64 +17,62 @@ public enum BuildingType
 public class ProceduralBuilding : MonoBehaviour
 {
     [SerializeField] [Range(0, 1.5f)] private float buildDelay = 1f;
-    [SerializeField] private int maxAmountOfStacks = 5;
     [SerializeField] private List<GameObject> availableFloorStacks;
     [SerializeField] private List<GameObject> availableMiddleStacks;
     [SerializeField] private List<GameObject> availableRoofStacks;
     [SerializeField] private Transform middleStacksParent;
-
-    [Header("House values")] [SerializeField]
-    private float houseDistanceFactor;
-
-    [SerializeField] private float houseWeightFactor;
-    [SerializeField] private float minRandomValue_House = -10;
-    [SerializeField] private float maxRandomValue_House = 70;
-
-
-    [Header("Skyscraper values")] [SerializeField]
-    private float skyscraperDistanceFactor;
-
-    [SerializeField] private float skyscraperWeightFactor;
-    [SerializeField] private float minRandomValue_Skyscraper = -30;
-    [SerializeField] private float maxRandomValue_Skyscraper = 100;
-
-    [SerializeField] private List<Vector3> billboardSpawnpoints = new List<Vector3>();
-
+    [SerializeField] private Transform temporaryStacksParent;
+    [SerializeField] private Transform editedStacksParent;
     [SerializeField] private List<GameObject> billboardPrefabs = new List<GameObject>();
 
+    [SerializeField] private int minAmountOfStacks;
+    [SerializeField] private int maxAmountOfStacks;
+
+    [SerializeField] private bool enableBillboards;
+
     public BuildingType buildingType;
-    public float distanceToCentroid;
-    public float houseValue;
-    public float skyscraperValue;
+    public float utilityValueHouse;
+    public float utilityValueSkyscraper;
     public Vector3 size;
 
-    public static bool EnableBillboards;
     public static float StackHeight = 1;
 
+    private List<GameObject> tempFloorStacks = new();
+    private List<GameObject> tempMiddleStacks = new();
+    private List<GameObject> tempRoofStacks = new();
+    private int finalMaxStackCount;
     private Vector3 bottomPosition;
-    private float maxDistanceToCenter;
+    private GameObject tempStack;
+    private int lastTempStackIndex;
     private int currentAmountOfStacks;
-    private List<GameObject> spawnedStacks = new List<GameObject>();
+    private List<Vector3> billboardSpawnpoints = new List<Vector3>();
+    public List<GameObject> spawnedStacks = new List<GameObject>();
+    public int floorStacksCount;
+    public int middleStacksCount;
+    public int roofStacksCount;
 
     private void Start()
     {
-        maxDistanceToCenter = calculateDistanceCenterToCorner();
-        determineBuildingType();
+        floorStacksCount = availableFloorStacks.Count;
+        middleStacksCount = availableMiddleStacks.Count;
+        roofStacksCount = availableRoofStacks.Count;
+
+        createTemporaryStacks(availableFloorStacks, tempFloorStacks);
+        createTemporaryStacks(availableMiddleStacks, tempMiddleStacks);
+        createTemporaryStacks(availableRoofStacks, tempRoofStacks);
+
         initializeGeneration();
     }
 
-    private float calculateDistancerToCenter() => Vector3.Distance(transform.position, NodeEditor.Centroid);
-    private float calculateDistanceCenterToCorner() => Vector3.Distance(NodeEditor.Centroid, NodeEditor.TopLeftCorner);
-
-    private float calculateUtilityValue(float pDistanceFactor, float pWeightFactor, float pMinRandomValue = 0,
-        float pMaxRandomValue = 0)
+    private void createTemporaryStacks(List<GameObject> pStacksToClone, List<GameObject> pTempStacks)
     {
-        distanceToCentroid = calculateDistancerToCenter();
-        float randomValue = Random.Range(pMinRandomValue, pMaxRandomValue);
-        float utilityValue = (1 - (distanceToCentroid - maxDistanceToCenter)) * pDistanceFactor + pWeightFactor +
-                             randomValue;
-
-        return utilityValue;
+        foreach (var stack in pStacksToClone)
+        {
+            GameObject tempStack = Instantiate(stack, transform.position, Quaternion.identity, temporaryStacksParent);
+            pTempStacks.Add(tempStack);
+            tempStack.SetActive(false);
+            tempStack.transform.position = transform.position;
+        }
     }
 
     private void handleBillboardSpawning(Transform pCurrentStack, int pCurrentIndex)
@@ -94,10 +93,12 @@ public class ProceduralBuilding : MonoBehaviour
         {
             if (Random.value > 0.5)
             {
+                Vector3 spawnpoint = spawnpoints[i];
+                spawnpoint.y += 0.5f;
                 GameObject billboard =
-                    Instantiate(billboardPrefabs[0], spawnpoints[i], Quaternion.identity, pCurrentStack);
+                    Instantiate(billboardPrefabs[0], spawnpoint, Quaternion.identity, pCurrentStack);
                 Vector3 offset = spawnpoints[i] - transform.position;
-                if (offset.x < 0 || offset.x > 0)
+                if (offset.x is < 0 or > 0)
                 {
                     billboard.transform.Rotate(new Vector3(0, 1, 0), 90f);
                 }
@@ -105,38 +106,15 @@ public class ProceduralBuilding : MonoBehaviour
         }
     }
 
-    private void determineBuildingType()
-    {
-        houseValue = calculateUtilityValue(houseDistanceFactor, houseWeightFactor, minRandomValue_House,
-            maxRandomValue_House);
-        skyscraperValue = calculateUtilityValue(skyscraperDistanceFactor, skyscraperWeightFactor,
-            minRandomValue_Skyscraper, maxRandomValue_Skyscraper);
-
-        buildingType = houseValue > skyscraperValue ? BuildingType.House : BuildingType.Skyscraper;
-    }
-
     private void initializeGeneration()
     {
-        currentAmountOfStacks = 0;
-
-        int maxAmount, minAmount;
-        if (buildingType == BuildingType.House)
-        {
-            minAmount = 1;
-            maxAmount = 5;
-        }
-        else
-        {
-            minAmount = 10;
-            maxAmount = 30;
-        }
-
-        maxAmountOfStacks = Random.Range(minAmount, maxAmount);
+        finalMaxStackCount = Random.Range(minAmountOfStacks, maxAmountOfStacks);
 
         generateFloor();
         StartCoroutine(generateMiddleStacks());
 
-        size = new Vector3(spawnedStacks[0].transform.lossyScale.x + 1, StackHeight * maxAmountOfStacks + (3 * StackHeight),
+        size = new Vector3(spawnedStacks[0].transform.lossyScale.x + 1,
+            StackHeight * finalMaxStackCount + (3 * StackHeight),
             spawnedStacks[0].transform.lossyScale.z + 1);
     }
 
@@ -150,9 +128,59 @@ public class ProceduralBuilding : MonoBehaviour
         initializeGeneration();
     }
 
+    public void ShowPotentialStack(int pStackIndex, int pPrefabIndex)
+    {
+        if (pPrefabIndex < 0)
+        {
+            spawnedStacks[pStackIndex].SetActive(true);
+            if(tempStack != null) tempStack.SetActive(false);
+            return;
+        }
+        if(tempStack != null) tempStack.SetActive(false);
+        spawnedStacks[lastTempStackIndex].SetActive(true);
+        lastTempStackIndex = pStackIndex;
+        spawnedStacks[lastTempStackIndex].SetActive(false);
+        Vector3 stackPosition = spawnedStacks[pStackIndex].transform.position;
+        if (pStackIndex == 0)
+        {
+            tempStack = tempFloorStacks[pPrefabIndex];
+        }
+        else if (pStackIndex == finalMaxStackCount - 1)
+        {
+            tempStack = tempRoofStacks[pPrefabIndex];
+        }
+        else
+        {
+            tempStack = tempMiddleStacks[pPrefabIndex];
+        }
+
+        tempStack.SetActive(true);
+        tempStack.transform.position = stackPosition;
+    }
+
+    public void ReplaceStack(int pStackIndex, int pPrefabIndex)
+    {
+        Vector3 stackPosition = spawnedStacks[pStackIndex].transform.position;
+        GameObject newPrefab;
+        if (pStackIndex == 0) newPrefab = availableFloorStacks[pPrefabIndex];
+        else if (pStackIndex > 0 && pStackIndex < finalMaxStackCount - 1)
+            newPrefab = availableMiddleStacks[pPrefabIndex];
+        else newPrefab = availableRoofStacks[pPrefabIndex];
+
+        GameObject oldPrefab = spawnedStacks[pStackIndex];
+        spawnedStacks.Remove(oldPrefab);
+        Destroy(oldPrefab);
+
+        GameObject stack = Instantiate(newPrefab,
+            stackPosition, Quaternion.identity,
+            editedStacksParent);
+        stack.name = $"[ MIDDLE STACK {pStackIndex} ]";
+        spawnedStacks.Insert(pStackIndex, newPrefab);
+    }
+
     private void generateFloor()
     {
-        int randomIndex = Random.Range(0, availableFloorStacks.Count - 1);
+        int randomIndex = Random.Range(0, availableFloorStacks.Count);
 
         bottomPosition = transform.position + new Vector3(0, StackHeight / 2, 0);
         GameObject stack = Instantiate(availableFloorStacks[randomIndex], bottomPosition, Quaternion.identity,
@@ -166,7 +194,7 @@ public class ProceduralBuilding : MonoBehaviour
     {
         yield return new WaitForSeconds(buildDelay);
 
-        int randomIndex = Random.Range(0, availableMiddleStacks.Count - 1);
+        int randomIndex = Random.Range(0, availableMiddleStacks.Count);
 
         GameObject stack = Instantiate(availableMiddleStacks[randomIndex],
             bottomPosition + new Vector3(0, StackHeight * currentAmountOfStacks, 0), Quaternion.identity,
@@ -174,10 +202,10 @@ public class ProceduralBuilding : MonoBehaviour
         stack.name = $"[ MIDDLE STACK {currentAmountOfStacks} ]";
         spawnedStacks.Add(stack);
 
-        if (EnableBillboards) handleBillboardSpawning(stack.transform, currentAmountOfStacks);
+        if (enableBillboards) handleBillboardSpawning(stack.transform, currentAmountOfStacks);
 
         currentAmountOfStacks++;
-        if (currentAmountOfStacks < maxAmountOfStacks - 1)
+        if (currentAmountOfStacks < finalMaxStackCount - 1)
         {
             StartCoroutine(generateMiddleStacks());
             yield return null;
@@ -187,7 +215,7 @@ public class ProceduralBuilding : MonoBehaviour
 
     private void generateRoof()
     {
-        int randomIndex = Random.Range(0, availableRoofStacks.Count - 1);
+        int randomIndex = Random.Range(0, availableRoofStacks.Count);
 
         GameObject stack = Instantiate(availableRoofStacks[randomIndex],
             bottomPosition + new Vector3(0, StackHeight * currentAmountOfStacks, 0), Quaternion.identity, transform);

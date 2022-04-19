@@ -33,7 +33,7 @@ public class NodeEditor : FSM_State
 
     [SerializeField] private Transform spawnpointParent;
     [SerializeField] private Transform nodeParent;
-    [SerializeField] public List<Node> allNodes = new List<Node>();
+    private List<Node> allNodes = new List<Node>();
     private Node currentlySelectedNode;
     private Node firstNode;
     private Node secondNode;
@@ -50,8 +50,8 @@ public class NodeEditor : FSM_State
     private List<Vector3> nodePositions = new List<Vector3>();
     private List<Spawnpoint> spawnPointsList = new List<Spawnpoint>();
 
-    public Vector3 buildingSize;
-    public Vector3 buildingOffset;
+    [HideInInspector] public Vector3 buildingSize;
+    [HideInInspector] public Vector3 buildingOffset;
     public static bool HasCalculatedSpawnpoints;
 
     public static Vector3 Centroid;
@@ -156,12 +156,6 @@ public class NodeEditor : FSM_State
         {
             nodePositions.Add(allNodes[i].position);
         }
-        
-        if(allNodes.Count > 0) Debug.Log($"allNodes count {allNodes.Count}. Index 0: {allNodes[0]}");
-        else Debug.Log("allNodes has no elements");
-        
-        if(nodePositions.Count > 0) Debug.Log($"Node positions count {nodePositions.Count}. Index 0: {nodePositions[0]}");
-        else Debug.Log("NodePositions has no elements");
 
         Centroid = GridHelperClass.GetCentroidOfArea(nodePositions);
 
@@ -186,9 +180,6 @@ public class NodeEditor : FSM_State
 
         outerCorners = new List<Vector3> {currentTopLeft, currentTopRight, currentBottomRight, currentBottomLeft};
         TopLeftCorner = currentTopLeft;
-        
-        if(outerCorners.Count > 0) Debug.Log($"outerCorners count {outerCorners.Count}. Index 0: {outerCorners[0]}");
-        else Debug.Log("OuterCorners has no elements");
     }
 
     private void alignOuterNodesToRectangle()

@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 60.639343, g: 63.82025, b: 93.407715, a: 1}
+  m_IndirectSpecularColor: {r: 39.022987, g: 29.500519, b: 23.871597, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -727,7 +727,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1365334891
 GameObject:
@@ -1121,7 +1121,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2131805909
 PrefabInstance:
@@ -1178,5 +1178,45 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: houseWeightFactor
+      value: 120
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: houseDistanceFactor
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: skyscraperWeightFactor
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: skyscraperDistanceFactor
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: availableHouses.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: availableHouses.Array.data[0]
+      value: 
+      objectReference: {fileID: 7978747416069244904, guid: de4a12b6c1ff9c744b662952ecbe477d, type: 3}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: availableHouses.Array.data[1]
+      value: 
+      objectReference: {fileID: 7978747416069244904, guid: 91a328a3404f2dc4d9db4e9bd8587dea, type: 3}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: availableSkyscrapers.Array.size
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: availableSkyscrapers.Array.data[0]
+      value: 
+      objectReference: {fileID: 7978747416069244904, guid: cbc812afae553504fb57f8a64e50a9f5, type: 3}
+    - target: {fileID: 1988833256932816476, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}
+      propertyPath: availableSkyscrapers.Array.data[1]
+      value: 
+      objectReference: {fileID: 7978747416069244904, guid: 589235d109643954289dcafc65b3ccdc, type: 3}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f76225ded47d5a64789c3b8cb883d29d, type: 3}

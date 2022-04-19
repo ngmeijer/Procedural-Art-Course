@@ -17,7 +17,10 @@ public enum CityBlockActions
 {
     Create,
     Finish,
-    Discard
+    Discard,
+    RegenerateBuilding,
+    Destroy,
+    ReplaceStack
 }
 
 public enum FSM_States
@@ -47,14 +50,28 @@ public class GeneratorFSM : MonoBehaviour
     public Vector3 buildingSize;
     public Vector3 buildingOffset;
     public float stackHeight;
-    public bool enableBillboards;
     public int selectedBuildingIndex;
     public int selectedCityBlockIndex;
+    public UtilitySettings utilitySettings = new();
+    public int CityBlockCount;
+    public int BuildingCount;
+    public int StackCount;
+    public int StackPrefabCount;
+    public int selectedNewStackPrefabIndex;
+    public int selectedStackIndex;
 
     private void Start()
     {
         ProcessNewNodeEditModeRequest(Node_EditModes.PlaceNode);
         ProcessNewGenerationModeRequest(FSM_States.None);
+    }
+
+    private void Update()
+    {
+        CityBlockCount = cityBlockGenerator.CityBlockCount;
+        BuildingCount = cityBlockGenerator.BuildingCount;
+        StackCount = cityBlockGenerator.StackCount;
+        StackPrefabCount = cityBlockGenerator.StackPrefabCount;
     }
 
     public void ProcessNewNodeEditModeRequest(Node_EditModes pNewMode)
@@ -87,17 +104,21 @@ public class GeneratorFSM : MonoBehaviour
                 cityBlockGenerator.CreateEmptyCityBlock();
                 break;
             case CityBlockActions.Finish:
-                cityBlockGenerator.FinishCityBlock();
+                cityBlockGenerator.FillCityBlock();
                 break;
             case CityBlockActions.Discard:
                 cityBlockGenerator.DiscardCurrentCityBlock();
                 break;
+            case CityBlockActions.Destroy:
+                cityBlockGenerator.DestroyIndexSelectedCityBlock();
+                break;
+            case CityBlockActions.RegenerateBuilding:
+                cityBlockGenerator.RegenerateBuilding();
+                break;
+            case CityBlockActions.ReplaceStack:
+                cityBlockGenerator.ReplaceBuildingStack();
+                break;
         }
-    }
-
-    public void ProcessCityBlockPreferredBuildingType(BuildingType pType)
-    {
-        cityBlockGenerator.currentPreferredBuildingType = pType;
     }
 
     public void ProcessNewGenerationModeRequest(FSM_States pOldState)
@@ -140,9 +161,11 @@ public class GeneratorFSM : MonoBehaviour
         {
             cityBlockGenerator.selectedCityBlockIndex = selectedCityBlockIndex;
             cityBlockGenerator.selectedBuildingIndex = selectedBuildingIndex;
+            cityBlockGenerator.selectedStackIndex = selectedStackIndex;
+            cityBlockGenerator.selectedNewStackPrefabIndex = selectedNewStackPrefabIndex;
+            cityBlockGenerator.utilitySettings = utilitySettings;
         }
 
         if(stackHeight != 0) ProceduralBuilding.StackHeight = stackHeight;
-        ProceduralBuilding.EnableBillboards = enableBillboards;
     }
 }
