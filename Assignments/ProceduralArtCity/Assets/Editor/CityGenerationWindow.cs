@@ -25,24 +25,28 @@ public class CityGenerationWindow : EditorWindow
     private Vector3 buildingSize = new Vector3(5, 0, 5);
     private Vector3 buildingOffset = new Vector3(3,0,3);
     private float stackHeight = 1f;
+    private float stackBuildDelay = 0.25f;
     private Vector2 stackHeightLimits = new Vector2(0, 10);
     private bool enableBillboards;
     private int selectedBuildingIndex;
     private int selectedCityBlockIndex;
-    private int selectedStackIndex;
-    private int selectedNewStackPrefabIndex;
+
     private UtilitySettings utilitySettings = new UtilitySettings()
     {
-        HouseWeightFactor = 5,
-        HouseDistanceFactor = 10,
-        
-        SkyscraperWeightFactor = 2,
-        SkyScraperDistanceFactor = 3,
+        HouseDistanceFactor = 3,
+        HouseWeightFactor = 100,
+
+        SkyScraperDistanceFactor = 11,
+        SkyscraperWeightFactor = 45,
         
         MinRandomValue = -10,
         MaxRandomValue = 10
     };
-    
+
+    private int selectedStackIndex;
+
+    private int selectedNewStackPrefabIndex;
+
     [MenuItem("Window/City Generator")]
     public static void ShowWindow()
     {
@@ -252,15 +256,17 @@ public class CityGenerationWindow : EditorWindow
         GUILayout.Space(5);
 
         GUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Stack height", GUILayout.Width(80), GUILayout.Height(20));
-            
+        EditorGUILayout.LabelField("Stack height", GUILayout.Width(120), GUILayout.Height(20));
         stackHeight = EditorGUILayout.Slider(stackHeight, 0, stackHeightLimits.y);
-            
         EditorGUILayout.LabelField("Max:", GUILayout.Width(30));
         stackHeightLimits.y = EditorGUILayout.FloatField(stackHeightLimits.y, GUILayout.Width(45),GUILayout.Height(20));
-        
         GUILayout.EndHorizontal();
-        
+
+        GUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Stack build delay", GUILayout.Width(120), GUILayout.Height(20));
+        stackBuildDelay = EditorGUILayout.Slider(stackBuildDelay, 0, 1.5f);
+        GUILayout.EndHorizontal();
+
         GUILayout.Space(30);
         
         GUILayout.Space(5);
@@ -330,16 +336,18 @@ public class CityGenerationWindow : EditorWindow
     private void OnValidate()
     {
         if (generator == null) generator = FindObjectOfType<GeneratorFSM>();
+        
         generator.buildingSize = new Vector3(buildingSize.x, 0f, buildingSize.z);
         generator.buildingOffset = new Vector3(buildingOffset.x, 0f, buildingOffset.z);
         
         generator.stackHeight = stackHeight;
+        generator.stackBuildDelay = stackBuildDelay;
         generator.selectedCityBlockIndex = selectedCityBlockIndex;
         generator.selectedBuildingIndex = selectedBuildingIndex;
         generator.utilitySettings = utilitySettings;
         generator.selectedStackIndex = selectedStackIndex;
         generator.selectedNewStackPrefabIndex = selectedNewStackPrefabIndex;
         
-        generator.UpdateVariables();
+        generator.UpdateDependencies();
     }
 }

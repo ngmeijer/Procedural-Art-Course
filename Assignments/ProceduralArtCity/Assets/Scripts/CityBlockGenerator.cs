@@ -52,6 +52,7 @@ public class CityBlockGenerator : FSM_State
     [HideInInspector] public int selectedStackIndex;
 
     private BuildingType currentBuildingType;
+    private Spawnpoint currentSpawnpoint;
     public UtilitySettings utilitySettings;
 
     private void Awake()
@@ -73,14 +74,16 @@ public class CityBlockGenerator : FSM_State
     {
         if (!isActive) return;
 
+        CityBlockCount = cityBlocksData.Count;
+
         if (cityBlocksData.Count > 0 && selectedCityBlockIndex >= 0 && selectedCityBlockIndex < cityBlocksData.Count)
             editorSelectedCityBlock = cityBlocksData[selectedCityBlockIndex];
 
-        selectBuilding();
-        selectStack();
+        selectTemporaryBuilding();
+        selectTemporaryStack();
     }
 
-    private void selectBuilding()
+    private void selectTemporaryBuilding()
     {
         if (editorSelectedCityBlock != null)
         {
@@ -91,7 +94,7 @@ public class CityBlockGenerator : FSM_State
         }
     }
 
-    private void selectStack()
+    private void selectTemporaryStack()
     {
         if (editorSelectedBuilding != null)
         {
@@ -129,6 +132,7 @@ public class CityBlockGenerator : FSM_State
 
         for (int i = 0; i < newCityBlock.spawnPoints.Count; i++)
         {
+            currentSpawnpoint = newCityBlock.spawnPoints[i];
             GameObject selectedBuilding = chooseRandomBuilding();
 
             //Let ProceduralBuilding.cs do the rest of the work
@@ -153,14 +157,11 @@ public class CityBlockGenerator : FSM_State
 
     private GameObject chooseRandomBuilding()
     {
-        //Determine building type
-
         currentBuildingType = determineBuildingType();
 
         int randomIndex = 0;
         GameObject selectedBuilding = null;
 
-        //If skyscraper, choose random from skyscraper list
         switch (currentBuildingType)
         {
             case BuildingType.House:
@@ -187,7 +188,6 @@ public class CityBlockGenerator : FSM_State
         cityBlockBuildingParent.parent = transform;
         cityBlockBuildingParent.name = $"[BLOCK {CityBlockCount}] building parent";
         cityBlock.parent = cityBlockBuildingParent;
-        CityBlockCount++;
         newCityBlock = cityBlock;
     }
 
@@ -195,7 +195,6 @@ public class CityBlockGenerator : FSM_State
     {
         newCityBlock = null;
         cityBlocksData.Remove(newCityBlock);
-        CityBlockCount--;
     }
 
     private void destroyIndexSelectedCityBlockBuildings()
@@ -204,6 +203,8 @@ public class CityBlockGenerator : FSM_State
         {
             if(buildingData != null) Destroy(buildingData.gameObject);
         }
+        
+        Destroy(editorSelectedCityBlock.parent.gameObject);
 
         cityBlocksData.Remove(editorSelectedCityBlock);
         if (selectedCityBlockIndex > cityBlocksData.Count - 1) selectedCityBlockIndex--;
@@ -223,7 +224,6 @@ public class CityBlockGenerator : FSM_State
     {
         destroyIndexSelectedCityBlockBuildings();
         deselectIndexSelectedCityBlockSpawnpoints();
-        CityBlockCount--;
         selectedCityBlockIndex = 0;
     }
 
@@ -250,7 +250,7 @@ public class CityBlockGenerator : FSM_State
         return currentHouseValue > currentSkyscraperValue ? BuildingType.House : BuildingType.Skyscraper;
     }
 
-    private float calculateDistancerToCenter() => Vector3.Distance(transform.position, NodeEditor.Centroid);
+    private float calculateDistancerToCenter() => Vector3.Distance(currentSpawnpoint.position, NodeEditor.Centroid);
 
     private float calculateMaxDistance() => Vector3.Distance(NodeEditor.Centroid, NodeEditor.TopLeftCorner);
 

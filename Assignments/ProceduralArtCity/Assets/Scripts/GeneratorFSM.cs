@@ -50,6 +50,7 @@ public class GeneratorFSM : MonoBehaviour
     public Vector3 buildingSize;
     public Vector3 buildingOffset;
     public float stackHeight;
+    public float stackBuildDelay;
     public int selectedBuildingIndex;
     public int selectedCityBlockIndex;
     public UtilitySettings utilitySettings = new();
@@ -149,7 +150,7 @@ public class GeneratorFSM : MonoBehaviour
         broadcastGenerationModeChange.Invoke(currentState);
     }
 
-    public void UpdateVariables()
+    public void UpdateDependencies()
     {
         if (nodeEditor != null)
         {
@@ -167,5 +168,6 @@ public class GeneratorFSM : MonoBehaviour
         }
 
         if(stackHeight != 0) ProceduralBuilding.StackHeight = stackHeight;
+        ProceduralBuilding.BuildDelay = stackBuildDelay;
     }
 }

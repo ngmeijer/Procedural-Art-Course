@@ -16,7 +16,8 @@ public enum BuildingType
 
 public class ProceduralBuilding : MonoBehaviour
 {
-    [SerializeField] [Range(0, 1.5f)] private float buildDelay = 1f;
+    public static float BuildDelay;
+    public static float StackHeight = 1;
     [SerializeField] private List<GameObject> availableFloorStacks;
     [SerializeField] private List<GameObject> availableMiddleStacks;
     [SerializeField] private List<GameObject> availableRoofStacks;
@@ -24,10 +25,8 @@ public class ProceduralBuilding : MonoBehaviour
     [SerializeField] private Transform temporaryStacksParent;
     [SerializeField] private Transform editedStacksParent;
     [SerializeField] private List<GameObject> billboardPrefabs = new List<GameObject>();
-
     [SerializeField] private int minAmountOfStacks;
     [SerializeField] private int maxAmountOfStacks;
-
     [SerializeField] private bool enableBillboards;
 
     public BuildingType buildingType;
@@ -35,12 +34,12 @@ public class ProceduralBuilding : MonoBehaviour
     public float utilityValueSkyscraper;
     public Vector3 size;
 
-    public static float StackHeight = 1;
 
     private List<GameObject> tempFloorStacks = new();
     private List<GameObject> tempMiddleStacks = new();
     private List<GameObject> tempRoofStacks = new();
     private int finalMaxStackCount;
+    private bool isGenerating;
     private Vector3 bottomPosition;
     private GameObject tempStack;
     private int lastTempStackIndex;
@@ -84,7 +83,7 @@ public class ProceduralBuilding : MonoBehaviour
         for (int i = 0; i < spawnpointCount; i++)
         {
             Vector3 offset = spawnpointParent.GetChild(i).localPosition;
-            offset.y += StackHeight * pCurrentIndex;
+            offset.y += (StackHeight * pCurrentIndex) + (StackHeight / 2);
             Vector3 spawnpoint = transform.position + offset;
             spawnpoints.Add(spawnpoint);
         }
@@ -93,10 +92,8 @@ public class ProceduralBuilding : MonoBehaviour
         {
             if (Random.value > 0.5)
             {
-                Vector3 spawnpoint = spawnpoints[i];
-                spawnpoint.y += 0.5f;
                 GameObject billboard =
-                    Instantiate(billboardPrefabs[0], spawnpoint, Quaternion.identity, pCurrentStack);
+                    Instantiate(billboardPrefabs[0], spawnpoints[i], Quaternion.identity, pCurrentStack);
                 Vector3 offset = spawnpoints[i] - transform.position;
                 if (offset.x is < 0 or > 0)
                 {
@@ -108,6 +105,10 @@ public class ProceduralBuilding : MonoBehaviour
 
     private void initializeGeneration()
     {
+        if (isGenerating) return;
+        isGenerating = true;
+        spawnedStacks.Clear();
+        currentAmountOfStacks = 0;
         finalMaxStackCount = Random.Range(minAmountOfStacks, maxAmountOfStacks);
 
         generateFloor();
@@ -120,6 +121,7 @@ public class ProceduralBuilding : MonoBehaviour
 
     public void RegenerateBuilding()
     {
+        if (isGenerating) return;
         for (int i = 0; i < spawnedStacks.Count; i++)
         {
             Destroy(spawnedStacks[i]);
@@ -130,6 +132,8 @@ public class ProceduralBuilding : MonoBehaviour
 
     public void ShowPotentialStack(int pStackIndex, int pPrefabIndex)
     {
+        if (isGenerating) return;
+        if (spawnedStacks.Count == 0) return;
         if (pPrefabIndex < 0)
         {
             spawnedStacks[pStackIndex].SetActive(true);
@@ -160,6 +164,8 @@ public class ProceduralBuilding : MonoBehaviour
 
     public void ReplaceStack(int pStackIndex, int pPrefabIndex)
     {
+        if (isGenerating) return;
+        
         Vector3 stackPosition = spawnedStacks[pStackIndex].transform.position;
         GameObject newPrefab;
         if (pStackIndex == 0) newPrefab = availableFloorStacks[pPrefabIndex];
@@ -192,7 +198,7 @@ public class ProceduralBuilding : MonoBehaviour
 
     private IEnumerator generateMiddleStacks()
     {
-        yield return new WaitForSeconds(buildDelay);
+        yield return new WaitForSeconds(BuildDelay);
 
         int randomIndex = Random.Range(0, availableMiddleStacks.Count);
 
@@ -221,6 +227,8 @@ public class ProceduralBuilding : MonoBehaviour
             bottomPosition + new Vector3(0, StackHeight * currentAmountOfStacks, 0), Quaternion.identity, transform);
         stack.name = "[ ROOF ]";
         spawnedStacks.Add(stack);
+
+        isGenerating = false;
     }
 
     private void OnDrawGizmos()
