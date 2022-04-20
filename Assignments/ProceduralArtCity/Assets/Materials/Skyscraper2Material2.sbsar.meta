@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: a7df89bc8f969f94ead24632cc2d1651
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: dda12f74ff9116a42b23482252b2c482, type: 3}
+  _instancesCopy:
+  - {fileID: 11400000, guid: dbcbec9611f47d444b37c04290bda369, type: 2}
+  _assetPath: Assets/Materials/Skyscraper2Material2.sbsar

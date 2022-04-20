@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 1b37ae446e93a3f4192bdd7b8ea4e262
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: dda12f74ff9116a42b23482252b2c482, type: 3}
+  _instancesCopy:
+  - {fileID: 11400000, guid: 73651b8aab6174a45a2b75efac69405d, type: 2}
+  _assetPath: Assets/Materials/Skyscraper1RoofMaterial.sbsar

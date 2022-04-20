@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: c56f3674a051ce1469cbc353727d443a
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: dda12f74ff9116a42b23482252b2c482, type: 3}
+  _instancesCopy:
+  - {fileID: 11400000, guid: 5fe9dc66df5aa844f814c031321e47b3, type: 2}
+  _assetPath: Assets/Materials/Material2Building1.sbsar

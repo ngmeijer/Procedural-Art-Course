@@ -140,16 +140,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45cca2a1aab8ad04d99f3af20997a197, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildDelay: 0.5
   availableFloorStacks:
-  - {fileID: 4694502010253120659, guid: 3ee863dc1806c644c90fbd07ca89e279, type: 3}
-  - {fileID: 3826433337790076622, guid: c2336972d72b31e4f82bf1bb9e4313e1, type: 3}
+  - {fileID: 2612284294212688660, guid: 46f5d876a6493dd4c9868a8adcf27e0b, type: 3}
   availableMiddleStacks:
-  - {fileID: 6161065788387158296, guid: 826c0a7d5e7ee704a9e78eec47fa4f5d, type: 3}
-  - {fileID: 1965927096374396433, guid: 95008ebb9ebd7ce43a4575afce097f59, type: 3}
+  - {fileID: 2612284294212688660, guid: 46f5d876a6493dd4c9868a8adcf27e0b, type: 3}
   availableRoofStacks:
-  - {fileID: 2971719696473699626, guid: 5526c9ece6d08f74687374eb7bda73ed, type: 3}
-  - {fileID: 9142785616934827231, guid: e3d38f739acdca24695965f0f11dd417, type: 3}
+  - {fileID: 8227965630750757900, guid: aa9131c2ed2d19a4eb7e34049fd69387, type: 3}
   middleStacksParent: {fileID: 240110023}
   temporaryStacksParent: {fileID: 6918737124181721498}
   editedStacksParent: {fileID: 5004373480173177948}

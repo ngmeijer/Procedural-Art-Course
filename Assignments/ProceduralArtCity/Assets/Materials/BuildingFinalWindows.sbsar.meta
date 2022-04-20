@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: 98d299150ad4b114e93b9ff643b2c4de
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: dda12f74ff9116a42b23482252b2c482, type: 3}
+  _instancesCopy:
+  - {fileID: 11400000, guid: 3290101e28304584298a9358cec07fdf, type: 2}
+  _assetPath: Assets/Materials/BuildingFinalWindows.sbsar

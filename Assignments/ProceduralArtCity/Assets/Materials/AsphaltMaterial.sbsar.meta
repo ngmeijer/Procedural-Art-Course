@@ -1,0 +1,13 @@
+fileFormatVersion: 2
+guid: db8488a2dc5e2ed4097a4540335e5723
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: dda12f74ff9116a42b23482252b2c482, type: 3}
+  _instancesCopy:
+  - {fileID: 11400000, guid: d496e315736b9874ebb440155814ecc9, type: 2}
+  _assetPath: Assets/Materials/AsphaltMaterial.sbsar

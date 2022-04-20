@@ -141,18 +141,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableFloorStacks:
-  - {fileID: 1488609291481706322, guid: 02113e3a65b78a54f988fa8af57dbef8, type: 3}
+  - {fileID: 6408115765332071254, guid: c7aaf33b27c6db34285260dd8f069a78, type: 3}
   availableMiddleStacks:
-  - {fileID: 9182611401419038955, guid: d1ecd763f3a53fd43b1232705bf380f9, type: 3}
+  - {fileID: 6408115765332071254, guid: c7aaf33b27c6db34285260dd8f069a78, type: 3}
   availableRoofStacks:
-  - {fileID: 2982878661349987336, guid: af5377326ada3284e9fde7705afe97b2, type: 3}
+  - {fileID: 4691926169453077359, guid: f0db145cab753e74cb650d41c0cb19b8, type: 3}
   middleStacksParent: {fileID: 240110023}
   temporaryStacksParent: {fileID: 524680388450746401}
   editedStacksParent: {fileID: 3766540194443705974}
   billboardPrefabs:
-  - {fileID: 288539665931301284, guid: c79abd4048335be4fa1791cb86290f2d, type: 3}
-  minAmountOfStacks: 15
-  maxAmountOfStacks: 35
+  - {fileID: 860457287718950152, guid: 0879b32762c0530448150c191b0407b2, type: 3}
+  - {fileID: 3284674761240121068, guid: 4fe6c21fffd2b394c989a07b2068a36b, type: 3}
+  - {fileID: 4381054623644308483, guid: d21ba96fcd73df84f81afc3b8aa9a4c0, type: 3}
+  minAmountOfStacks: 8
+  maxAmountOfStacks: 20
   enableBillboards: 1
   buildingType: 1
   utilityValueHouse: 0

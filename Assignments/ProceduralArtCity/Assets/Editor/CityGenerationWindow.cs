@@ -33,14 +33,14 @@ public class CityGenerationWindow : EditorWindow
 
     private UtilitySettings utilitySettings = new UtilitySettings()
     {
-        HouseDistanceFactor = 3,
-        HouseWeightFactor = 100,
+        HouseDistanceFactor = 4,
+        HouseWeightFactor = 800,
 
-        SkyScraperDistanceFactor = 11,
-        SkyscraperWeightFactor = 45,
+        SkyScraperDistanceFactor = 16,
+        SkyscraperWeightFactor = 200,
         
-        MinRandomValue = -10,
-        MaxRandomValue = 10
+        MinRandomValue = -50,
+        MaxRandomValue = 100
     };
 
     private int selectedStackIndex;
