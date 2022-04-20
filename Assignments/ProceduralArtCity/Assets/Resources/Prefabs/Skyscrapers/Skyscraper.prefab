@@ -141,13 +141,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   availableFloorStacks:
-  - {fileID: 1252402011545995160, guid: 461ecce153f272b47b464c3a1805e316, type: 3}
   - {fileID: 1488609291481706322, guid: 02113e3a65b78a54f988fa8af57dbef8, type: 3}
   availableMiddleStacks:
-  - {fileID: 6624239416975909572, guid: 7fc1f498a0bee0549bdf58290ead314a, type: 3}
   - {fileID: 9182611401419038955, guid: d1ecd763f3a53fd43b1232705bf380f9, type: 3}
   availableRoofStacks:
-  - {fileID: 6922688247347471041, guid: c95ff13af406f7043886cc49f38a8132, type: 3}
   - {fileID: 2982878661349987336, guid: af5377326ada3284e9fde7705afe97b2, type: 3}
   middleStacksParent: {fileID: 240110023}
   temporaryStacksParent: {fileID: 524680388450746401}
@@ -156,7 +153,7 @@ MonoBehaviour:
   - {fileID: 288539665931301284, guid: c79abd4048335be4fa1791cb86290f2d, type: 3}
   minAmountOfStacks: 15
   maxAmountOfStacks: 35
-  enableBillboards: 1
+  enableBillboards: 0
   buildingType: 1
   utilityValueHouse: 0
   utilityValueSkyscraper: 0

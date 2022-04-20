@@ -100,7 +100,9 @@ public class CityGenerationWindow : EditorWindow
         handleCityBlockGUI();
         GUILayout.Space(40);
         handleBuildingSpecificGUI();
-        
+        GUILayout.Space(40);
+        handleScreenshotModeGUI();
+
         if (GUI.changed) OnValidate();
     }
 
@@ -294,8 +296,18 @@ public class CityGenerationWindow : EditorWindow
         
         GUILayout.EndVertical();
         GUILayout.EndHorizontal();
+        
+        GUILayout.Space(10);
+        
+        GUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Minimum random value", GUILayout.Width(155), GUILayout.Height(20));
+        utilitySettings.MinRandomValue = EditorGUILayout.FloatField(utilitySettings.MinRandomValue, GUILayout.Height(20));
+        
+        EditorGUILayout.LabelField("Maximum random value", GUILayout.Width(155), GUILayout.Height(20));
+        utilitySettings.MaxRandomValue = EditorGUILayout.FloatField(utilitySettings.MaxRandomValue, GUILayout.Height(20));
+        GUILayout.EndHorizontal();
     }
-    
+
     private void handleBuildingSpecificGUI()
     {
         GUI.backgroundColor = Color.white;
@@ -331,6 +343,21 @@ public class CityGenerationWindow : EditorWindow
             }
             GUILayout.EndHorizontal();
         }
+    }
+
+    private void handleScreenshotModeGUI()
+    {
+        GUILayout.FlexibleSpace();
+        GUILayout.BeginHorizontal();
+        GUI.backgroundColor = Color.green;
+        if (GUILayout.Button("Enter screenshot mode", buttonStyle, GUILayout.Height(50)))
+            generator.ProcessScreenshotModeRequest(ScreenshotMode.Enable);
+
+        GUI.backgroundColor = Color.red;
+        if (GUILayout.Button("Exit screenshot mode", buttonStyle, GUILayout.Height(50)))
+            generator.ProcessScreenshotModeRequest(ScreenshotMode.Disable);
+        
+        GUILayout.EndHorizontal();
     }
 
     private void OnValidate()
