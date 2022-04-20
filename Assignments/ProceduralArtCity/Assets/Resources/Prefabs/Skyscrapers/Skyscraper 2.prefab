@@ -153,7 +153,7 @@ MonoBehaviour:
   - {fileID: 288539665931301284, guid: c79abd4048335be4fa1791cb86290f2d, type: 3}
   minAmountOfStacks: 15
   maxAmountOfStacks: 35
-  enableBillboards: 0
+  enableBillboards: 1
   buildingType: 1
   utilityValueHouse: 0
   utilityValueSkyscraper: 0

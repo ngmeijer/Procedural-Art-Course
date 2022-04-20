@@ -9,6 +9,12 @@ public class Event_OnClickNewMode : UnityEvent<string>
 {
 }
 
+[Serializable]
+public class Event_HandleScreenshotMode : UnityEvent<bool>
+{
+    
+}
+
 [Serializable] public class Event_OnCityBlockAction : UnityEvent{}
 
 public class UIManager : MonoBehaviour
@@ -25,6 +31,7 @@ public class UIManager : MonoBehaviour
     public static Event_OnCityBlockAction onCityBlockFinish = new Event_OnCityBlockAction();
     private FSM_States currentState;
     private string currentGenerationMode = "GenerateNodes";
+    private bool hideUI;
 
     private void Awake()
     {
@@ -32,12 +39,18 @@ public class UIManager : MonoBehaviour
         
         GeneratorFSM.broadcastNodeEditModeChange.AddListener(listenToNewNodeMode);
         GeneratorFSM.broadcastGenerationModeChange.AddListener(listenToNewGenerationMode);
+        GeneratorFSM.onClickScreenshotMode.AddListener(DisableUI);
+    }
+
+    private void DisableUI(bool pState)
+    {
+        hideUI = pState;
     }
 
     private void OnGUI()
     {
+        if (hideUI) return;
         PrepareGameGUI();
-        PrepareCityBlockGUI();
     }
 
     private void listenToNewGenerationMode(FSM_States pNewState)
@@ -79,12 +92,7 @@ public class UIManager : MonoBehaviour
 
         currentNodeEditMode = pNewMode.ToString();
     }
-
-    private void PrepareCityBlockGUI()
-    {
-        
-    }
-
+    
     private void PrepareGameGUI()
     {
         labelStyle.normal.textColor = Color.white;

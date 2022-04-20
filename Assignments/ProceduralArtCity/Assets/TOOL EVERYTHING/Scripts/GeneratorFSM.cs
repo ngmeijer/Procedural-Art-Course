@@ -42,7 +42,7 @@ public class GeneratorFSM : MonoBehaviour
 {
     public static UnityEvent<Node_EditModes> broadcastNodeEditModeChange = new UnityEvent<Node_EditModes>();
     public static UnityEvent<FSM_States> broadcastGenerationModeChange = new UnityEvent<FSM_States>();
-
+    public static Event_HandleScreenshotMode onClickScreenshotMode = new Event_HandleScreenshotMode();
     public static UnityEvent onClickRegenerateSpawnpoints = new UnityEvent();
     
     [SerializeField] private NodeEditor nodeEditor;
@@ -103,23 +103,9 @@ public class GeneratorFSM : MonoBehaviour
         ProcessNewGenerationModeRequest(FSM_States.GenerateRoads);
     }
 
-    public void ProcessScreenshotModeRequest(ScreenshotMode pMode)
+    public void ProcessScreenshotModeRequest(bool pState)
     {
-        switch (pMode)
-        {
-            case ScreenshotMode.Enable:
-                nodeEditor.HandleSpawnpointState(false);
-                NodeEditor.DisableGizmos = true;
-                RoadGenerator.DisableGizmos = true;
-                CityBlockGenerator.DisableGizmos = true;
-                break;
-            case ScreenshotMode.Disable:
-                nodeEditor.HandleSpawnpointState(true);
-                NodeEditor.DisableGizmos = false;
-                RoadGenerator.DisableGizmos = false;
-                CityBlockGenerator.DisableGizmos = false;
-                break;
-        }
+        onClickScreenshotMode.Invoke(pState);
     }
 
     public void ProcessCityBlockActionRequest(CityBlockActions pAction)

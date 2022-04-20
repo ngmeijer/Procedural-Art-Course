@@ -57,6 +57,7 @@ public class CityBlockGenerator : FSM_State
 
     private void Awake()
     {
+        GeneratorFSM.onClickScreenshotMode.AddListener(handleGizmoState);
         PointSelector.onSpawnpointSelect.AddListener(determineSpawnpointAction);
     }
 

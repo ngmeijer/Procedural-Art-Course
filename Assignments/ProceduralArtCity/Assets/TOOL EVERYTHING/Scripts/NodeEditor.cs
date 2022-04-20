@@ -63,9 +63,19 @@ public class NodeEditor : FSM_State
         CityBlockGenerator.onBuildingSettingsChanged.AddListener(updateBuildingSettings);
         GeneratorFSM.broadcastNodeEditModeChange.AddListener(updateEditMode);
         GeneratorFSM.onClickRegenerateSpawnpoints.AddListener(recalculateSpawnpoints);
+        GeneratorFSM.onClickScreenshotMode.AddListener(handleScreenshotMode);
         
         nodePrefab = Resources.Load<GameObject>("Prefabs/NodeInstance");
         spawnpointPrefab = Resources.Load<GameObject>("Prefabs/SpawnpointInstance");
+    }
+
+    private void handleScreenshotMode(bool pState)
+    {
+        DisableGizmos = pState;
+        foreach (var spawnpoint in spawnPointsList)
+        {
+            spawnpoint.gameObject.SetActive(!pState);
+        }
     }
 
     public override void EnterState() => isActive = true;
@@ -422,19 +432,6 @@ public class NodeEditor : FSM_State
 
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[nextIndex]);
             Gizmos.DrawLine(outerCorners[currentIndex], outerCorners[previousIndex]);
-        }
-    }
-
-    public void UpdateVariables()
-    {
-        Debug.Log(buildingSize);
-    }
-
-    public void HandleSpawnpointState(bool pState)
-    {
-        foreach (var spawnpoint in spawnPointsList)
-        {
-            spawnpoint.gameObject.SetActive(pState);
         }
     }
 }

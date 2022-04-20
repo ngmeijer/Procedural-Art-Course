@@ -90,10 +90,11 @@ public class ProceduralBuilding : MonoBehaviour
 
         for (int i = 0; i < randomAmount; i++)
         {
+            int randomBillboardIndex = Random.Range(0, billboardPrefabs.Count);
             if (Random.value > 0.5)
             {
                 GameObject billboard =
-                    Instantiate(billboardPrefabs[0], spawnpoints[i], Quaternion.identity, pCurrentStack);
+                    Instantiate(billboardPrefabs[randomBillboardIndex], spawnpoints[i], Quaternion.identity, pCurrentStack);
                 Vector3 offset = spawnpoints[i] - transform.position;
                 if (offset.x is < 0 or > 0)
                 {

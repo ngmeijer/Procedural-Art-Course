@@ -351,11 +351,11 @@ public class CityGenerationWindow : EditorWindow
         GUILayout.BeginHorizontal();
         GUI.backgroundColor = Color.green;
         if (GUILayout.Button("Enter screenshot mode", buttonStyle, GUILayout.Height(50)))
-            generator.ProcessScreenshotModeRequest(ScreenshotMode.Enable);
+            generator.ProcessScreenshotModeRequest(true);
 
         GUI.backgroundColor = Color.red;
         if (GUILayout.Button("Exit screenshot mode", buttonStyle, GUILayout.Height(50)))
-            generator.ProcessScreenshotModeRequest(ScreenshotMode.Disable);
+            generator.ProcessScreenshotModeRequest(false);
         
         GUILayout.EndHorizontal();
     }
